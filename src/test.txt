@@ -1,0 +1,63 @@
+import express from 'express';
+
+import {
+  checkSession,
+  checkUsernameOrEmail,
+  login,
+  logout,
+} from '../controllers/authController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
+
+const router = express.Router();
+
+// -------------------- AUTH ROUTES --------------------
+
+// Login (email OR username)
+router.post("/login", login);
+
+// Logout (clears session)
+router.post("/logout", authMiddleware, logout);
+
+// Check current session
+router.get("/check", authMiddleware, checkSession);
+
+router.post("/check-username", checkUsernameOrEmail);
+export default router;
+
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  withCredentials: true, // VERY IMPORTANT for express-session
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Optional interceptors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn("Unauthorized — Session expired or not logged in");
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;
+
+
+NEXT_PUBLIC_API_URL='http://localhost:3000/api'
+
+
+
+ const res = await axiosInstance.post("/auth/check-username", {
+        username,
+      });
+
+
+const res = await axiosInstance.post("/auth/login", {
+        identifier: username, // backend accepts email OR username
+        password,
+      });
