@@ -125,7 +125,7 @@ const AppointmentsPage = () => {
               placeholder="Search by client, service, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-lg border border-[#e8dcd4] focus:outline-none focus:ring-2 focus:ring-[#c1a38f] text-sm md:text-base w-full box-border min-w-0"
+              className="flex-1 px-4 py-2 bg-white/70 rounded-lg border border-[#e8dcd4] focus:outline-none focus:ring-2 focus:ring-[#c1a38f] text-sm md:text-base w-full box-border min-w-0"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
