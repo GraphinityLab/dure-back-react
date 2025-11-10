@@ -77,7 +77,7 @@ const ClientsPage = () => {
   };
 
   return (
-    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border font-[CaviarDreams]">
+    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
       {/* LOADING SPINNER */}
       {actionLoading && (
         <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50">
@@ -109,7 +109,7 @@ const ClientsPage = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={fetchClients}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow"
+              className="flex font-extrabold items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow"
             >
               <RefreshCcw className="w-5 h-5" />
             </motion.button>

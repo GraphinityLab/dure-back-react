@@ -54,7 +54,7 @@ const HistoryPage = () => {
   };
 
   return (
-    <section className="relative w-full py-20 px-4 sm:px-6 lg:px-8 min-h-screen text-[#3e2e3d] font-[CaviarDreams]">
+    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
       {actionLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-14 h-14 border-4 border-white border-t-transparent rounded-full animate-spin"></div>

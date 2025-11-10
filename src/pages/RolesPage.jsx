@@ -76,7 +76,7 @@ const RolesPage = () => {
   };
 
   return (
-    <section className="relative overflow-x-auto w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border font-[CaviarDreams]">
+    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
       <div className="relative max-w-7xl mx-auto z-10">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
