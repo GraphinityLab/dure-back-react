@@ -134,7 +134,6 @@ const AppointmentsPage = () => {
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow w-full md:w-auto justify-center min-w-0"
             >
               <RefreshCcw className="w-5 h-5" />
-              Refresh
             </motion.button>
           </div>
         </div>

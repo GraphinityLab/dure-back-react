@@ -59,7 +59,7 @@ const DeleteConfirmationModal = ({ title, message, onCancel, onConfirm }) => (
     exit={{ opacity: 0 }}
   >
     <motion.div
-      className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-[#3e2e3d] font-[CaviarDreams] border border-[#e8dcd4]/50"
+      className="bg-white rounded-2xl shadow-xl bg-white/70 p-6 w-full max-w-md text-[#3e2e3d] font-[CaviarDreams]"
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.9, opacity: 0 }}
