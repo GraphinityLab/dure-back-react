@@ -24,6 +24,7 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
     postal_code: staff.postal_code || '',
     password: '',
     confirmPassword: '',
+    online: staff.online || false, // <-- added online
   });
 
   const [errors, setErrors] = useState({});
@@ -33,6 +34,13 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: '' });
+    setSuccessMessage('');
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setForm({ ...form, [name]: checked });
     setErrors({ ...errors, [name]: '' });
     setSuccessMessage('');
   };
@@ -47,7 +55,8 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
 
     if (form.password) {
       if (!passwordStrength(form.password))
-        newErrors.password = 'Password too weak (min 8 chars, uppercase, lowercase, number, special char)';
+        newErrors.password =
+          'Password too weak (min 8 chars, uppercase, lowercase, number, special char)';
       if (form.password !== form.confirmPassword)
         newErrors.confirmPassword = 'Passwords do not match';
     }
@@ -95,10 +104,12 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
         <h3 className="text-2xl font-[Soligant] mb-2">Edit Staff</h3>
 
         {/* Error bar */}
-        {Object.values(errors).some(e => e?.trim()) && (
+        {Object.values(errors).some((e) => e?.trim()) && (
           <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded text-red-700 text-sm">
             <ul className="list-disc list-inside">
-              {Object.entries(errors).map(([key, error]) => error?.trim() && <li key={key}>{error}</li>)}
+              {Object.entries(errors).map(
+                ([key, error]) => error?.trim() && <li key={key}>{error}</li>
+              )}
             </ul>
           </div>
         )}
@@ -111,25 +122,131 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <input type="text" name="first_name" placeholder="First Name" value={form.first_name} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="last_name" placeholder="Last Name" value={form.last_name} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="username" placeholder="Username" value={form.username} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="role_id" placeholder="Role ID" value={form.role_id} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="phone_number" placeholder="Phone (optional)" value={form.phone_number} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="address" placeholder="Address" value={form.address} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="city" placeholder="City" value={form.city} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="province" placeholder="Province" value={form.province} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="text" name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="password" name="password" placeholder="New Password (optional)" value={form.password} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
-          <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
+          <input
+            type="text"
+            name="first_name"
+            placeholder="First Name"
+            value={form.first_name}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="last_name"
+            placeholder="Last Name"
+            value={form.last_name}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={form.username}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="role_id"
+            placeholder="Role ID"
+            value={form.role_id}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="phone_number"
+            placeholder="Phone (optional)"
+            value={form.phone_number}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Address"
+            value={form.address}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="city"
+            placeholder="City"
+            value={form.city}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="province"
+            placeholder="Province"
+            value={form.province}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="text"
+            name="postal_code"
+            placeholder="Postal Code"
+            value={form.postal_code}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="New Password (optional)"
+            value={form.password}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+          />
+        </div>
+
+        {/* Online checkbox */}
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="checkbox"
+            id="online"
+            name="online"
+            checked={form.online}
+            onChange={handleCheckboxChange}
+            className="h-4 w-4 accent-[#c1a38f] rounded"
+          />
+          <label htmlFor="online" className="text-sm text-[#3e2e3d] font-medium">
+            Online
+          </label>
         </div>
 
         <div className="flex justify-end gap-4 mt-4">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-full bg-white border border-[#d8c9c9] text-[#3e2e3d] hover:bg-[#f5eeee] transition font-semibold text-sm">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-full bg-white border border-[#d8c9c9] text-[#3e2e3d] hover:bg-[#f5eeee] transition font-semibold text-sm"
+          >
             Cancel
           </button>
-          <button onClick={handleSubmit} disabled={loading} className="px-5 py-2.5 rounded-full bg-[#c1a38f] text-white hover:bg-[#a78974] transition font-semibold text-sm">
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="px-5 py-2.5 rounded-full bg-[#c1a38f] text-white hover:bg-[#a78974] transition font-semibold text-sm"
+          >
             {loading ? 'Updating...' : 'Update'}
           </button>
         </div>

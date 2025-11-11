@@ -87,6 +87,7 @@ export const updateStaff = async (req, res) => {
       "city",
       "province",
       "postal_code",
+      "online", // <-- added online here
     ];
 
     // Handle password separately
@@ -131,6 +132,7 @@ export const updateStaff = async (req, res) => {
     res.status(500).json({ message: "Server error updating staff" });
   }
 };
+
 
 // -------------------- DELETE STAFF --------------------
 export const deleteStaff = async (req, res) => {

@@ -54,7 +54,6 @@ const sessionStoreOptions = {
 const sessionStore = new MySQLStore(sessionStoreOptions);
 
 // -------------------- SESSION MIDDLEWARE --------------------
-// Only create session when something is set (login)
 app.use(
   session({
     key: process.env.SESSION_NAME || "sid",
@@ -64,12 +63,13 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false, // true in production with HTTPS
-      sameSite: "lax",
+      secure: false,         // ❗ must stay false on localhost (no HTTPS)
+      sameSite: "lax",       // ✅ Chrome-compatible for localhost
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     },
   })
 );
+
 
 // -------------------- SESSION ENDPOINTS --------------------
 

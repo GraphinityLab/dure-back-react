@@ -36,7 +36,9 @@ export const createService = async (req, res) => {
       },
     });
 
-    res.status(201).json({ message: "Service created", service_id: result.insertId });
+    res
+      .status(201)
+      .json({ message: "Service created", service_id: result.insertId });
   } catch (err) {
     console.error("createService error:", err);
     res.status(500).json({ message: "Server error creating service" });
@@ -49,12 +51,22 @@ export const updateService = async (req, res) => {
     const { service_id } = req.params;
     const payload = { ...req.body };
 
-    const [existingRows] = await pool.query("SELECT * FROM services WHERE service_id = ?", [service_id]);
-    if (existingRows.length === 0) return res.status(404).json({ message: "Service not found" });
+    const [existingRows] = await pool.query(
+      "SELECT * FROM services WHERE service_id = ?",
+      [service_id]
+    );
+    if (existingRows.length === 0)
+      return res.status(404).json({ message: "Service not found" });
 
     const oldData = existingRows[0];
 
-    const allowedFields = ["name", "duration_minutes", "price", "category", "description"];
+    const allowedFields = [
+      "name",
+      "duration_minutes",
+      "price",
+      "category",
+      "description",
+    ];
     const updates = [];
     const values = [];
 
@@ -65,12 +77,19 @@ export const updateService = async (req, res) => {
       }
     }
 
-    if (updates.length === 0) return res.status(400).json({ message: "Nothing to update" });
+    if (updates.length === 0)
+      return res.status(400).json({ message: "Nothing to update" });
 
     values.push(service_id);
-    await pool.query(`UPDATE services SET ${updates.join(", ")} WHERE service_id = ?`, values);
+    await pool.query(
+      `UPDATE services SET ${updates.join(", ")} WHERE service_id = ?`,
+      values
+    );
 
-    const [afterRows] = await pool.query("SELECT * FROM services WHERE service_id = ?", [service_id]);
+    const [afterRows] = await pool.query(
+      "SELECT * FROM services WHERE service_id = ?",
+      [service_id]
+    );
     const newData = afterRows[0];
 
     await logChange({
@@ -96,8 +115,12 @@ export const deleteService = async (req, res) => {
   try {
     const { service_id } = req.params;
 
-    const [existingRows] = await pool.query("SELECT * FROM services WHERE service_id = ?", [service_id]);
-    if (existingRows.length === 0) return res.status(404).json({ message: "Service not found" });
+    const [existingRows] = await pool.query(
+      "SELECT * FROM services WHERE service_id = ?",
+      [service_id]
+    );
+    if (existingRows.length === 0)
+      return res.status(404).json({ message: "Service not found" });
 
     const oldData = existingRows[0];
 
@@ -145,11 +168,32 @@ export const getServiceByID = async (req, res) => {
       [service_id]
     );
 
-    if (rows.length === 0) return res.status(404).json({ message: "Service not found" });
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Service not found" });
 
     res.json({ service: rows[0] });
   } catch (err) {
     console.error("getServiceByID error:", err);
     res.status(500).json({ message: "Server error fetching service" });
+  }
+};
+
+// -------------------- DASHBOARD OVERVIEW FOR SERVICES --------------------
+export const getServiceDashboard = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+    COUNT(*) AS total_services,
+    ROUND(AVG(price), 2) AS avg_price,
+    ROUND(AVG(duration_minutes), 0) AS avg_duration_minutes
+FROM services;
+    `);
+
+    res.json({ services: rows });
+  } catch (err) {
+    console.error("getServiceDashboard error:", err);
+    res
+      .status(500)
+      .json({ message: "Server error fetching service dashboard" });
   }
 };
