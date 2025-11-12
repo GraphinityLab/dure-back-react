@@ -183,7 +183,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main area */}
-      <main className="relative z-10 flex-1 px-9 py-6 flex flex-col gap-5 min-w-0 text-left">
+      <main className="relative z-10 flex-1 px-15 py-6 flex flex-col gap-5 min-w-0 text-left">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -194,9 +194,9 @@ export default function DashboardLayout() {
               {activeTitle}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full bg-white/50 border border-white/40 px-3 py-1.5 text-[0.65rem] text-[#3c2b21]/80">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-[140px] rounded-full bg-white/40 border border-white/45 flex items-center justify-center text-[0.65rem] text-[#3c2b21]">
+              <span className="h-3 w-3 mx-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
               Status healthy
             </div>
             <div className="h-10 w-[140px] rounded-full bg-white/40 border border-white/45 flex items-center justify-center text-[0.65rem] text-[#3c2b21]">
