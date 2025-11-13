@@ -127,7 +127,7 @@ export default function HomePage() {
         password,
       });
       dispatch({ type: "RESET_LOCK" });
-      navigate("/dashboard/appointments", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       const msg = err?.response?.data?.message || "Login failed";
       dispatch({ type: "SET_ERROR", value: msg });
