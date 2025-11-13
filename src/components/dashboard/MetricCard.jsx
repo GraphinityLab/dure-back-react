@@ -5,6 +5,19 @@ import {
   CalendarCheck2,
   Users,
   AlertTriangle,
+  UserCheck,
+  Clock,
+  FileText,
+  ShieldCheck,
+  TrendingUp,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  History,
+  FileSearch,
+  Key,
+  BarChart3,
+  Sparkles,
 } from "lucide-react";
 
 /**
@@ -12,14 +25,28 @@ import {
  * - title: string
  * - value: string | number
  * - change?: string
- * - tone?: 'default' | 'warn' | 'success' | 'muted'
- * - icon?: 'total' | 'today' | 'staff' | 'pending'
+ * - tone?: 'default' | 'warn' | 'success' | 'muted' | 'info'
+ * - icon?: 'total' | 'today' | 'staff' | 'pending' | 'clients' | 'online' | 'active' | 'history' | 'logs' | 'roles' | 'trend' | 'check' | 'cancel' | 'file' | 'key' | 'chart' | 'sparkles' | 'clock'
  */
 const ICONS = {
   total: CalendarDays,
   today: CalendarCheck2,
   staff: Users,
   pending: AlertTriangle,
+  clients: Users, // Using Users icon for clients
+  online: Activity,
+  active: UserCheck,
+  history: History,
+  logs: FileText,
+  roles: ShieldCheck,
+  trend: TrendingUp,
+  check: CheckCircle2,
+  cancel: XCircle,
+  file: FileSearch,
+  key: Key,
+  chart: BarChart3,
+  sparkles: Sparkles,
+  clock: Clock,
 };
 
 const frameByTone = {
@@ -31,6 +58,8 @@ const frameByTone = {
     "border-[#CDE8D9] shadow-[0_20px_54px_rgba(92,187,141,0.22)]",
   muted:
     "border-white/50 shadow-[0_16px_36px_rgba(12,16,18,0.06)]",
+  info:
+    "border-[#C4D9F0] shadow-[0_20px_54px_rgba(96,165,250,0.22)]",
 };
 
 const chipByTone = {
@@ -38,6 +67,7 @@ const chipByTone = {
   warn: "bg-[#fff3ef] text-[#9c3b29] border-[#f2c3b6]",
   success: "bg-[#f3fbf7] text-[#2f7a55] border-[#cfeedd]",
   muted: "bg-white/55 text-[#85766e] border-white/65",
+  info: "bg-[#eff6ff] text-[#1e40af] border-[#bfdbfe]",
 };
 
 export default function MetricCard({
@@ -62,8 +92,20 @@ export default function MetricCard({
         <div className="grid grid-cols-[auto_1fr] gap-3 p-4">
           {/* icon */}
           <div className="self-start">
-            <div className="h-10 w-10 rounded-xl border border-white/70 bg-white/70 flex items-center justify-center">
-              <Icon className="h-5 w-5 text-[#6a5950]" aria-hidden />
+            <div className={[
+              "h-10 w-10 rounded-xl border flex items-center justify-center transition-all duration-200",
+              tone === "success" ? "border-[#CDE8D9] bg-[#f3fbf7]" :
+              tone === "warn" ? "border-[#F2C7BA] bg-[#fff3ef]" :
+              tone === "info" ? "border-[#C4D9F0] bg-[#eff6ff]" :
+              "border-white/70 bg-white/70"
+            ].join(" ")}>
+              <Icon className={[
+                "h-5 w-5 transition-colors duration-200",
+                tone === "success" ? "text-[#2f7a55]" :
+                tone === "warn" ? "text-[#9c3b29]" :
+                tone === "info" ? "text-[#1e40af]" :
+                "text-[#6a5950]"
+              ].join(" ")} aria-hidden />
             </div>
           </div>
 

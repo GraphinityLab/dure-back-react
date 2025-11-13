@@ -170,7 +170,7 @@ export const getStaff = async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT staff_id, first_name, last_name, username, email, role_id,
-             phone_number, address, city, province, postal_code
+             phone_number, address, city, province, postal_code, online
       FROM staff
     `);
     res.json({ staff: rows });
@@ -186,7 +186,7 @@ export const getStaffByID = async (req, res) => {
     const { staff_id } = req.params;
     const [rows] = await pool.query(`
       SELECT staff_id, first_name, last_name, username, email, role_id,
-             phone_number, address, city, province, postal_code
+             phone_number, address, city, province, postal_code, online
       FROM staff
       WHERE staff_id = ?
     `, [staff_id]);
@@ -197,5 +197,39 @@ export const getStaffByID = async (req, res) => {
   } catch (err) {
     console.error("getStaffByID error:", err);
     res.status(500).json({ message: "Server error fetching staff" });
+  }
+};
+
+// -------------------- DASHBOARD OVERVIEW FOR STAFF --------------------
+export const getStaffDashboard = async (req, res) => {
+  try {
+    // Total staff
+    const [[totalStaff]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM staff`
+    );
+
+    // Online staff
+    const [[onlineStaff]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM staff WHERE online = 1`
+    );
+
+    // Staff by role
+    const [staffByRole] = await pool.query(`
+      SELECT r.role_name, COUNT(s.staff_id) AS count
+      FROM staff s
+      LEFT JOIN Roles r ON s.role_id = r.role_id
+      GROUP BY r.role_id, r.role_name
+    `);
+
+    res.json({
+      counts: {
+        totalStaff: totalStaff.count || 0,
+        onlineStaff: onlineStaff.count || 0,
+      },
+      staffByRole,
+    });
+  } catch (err) {
+    console.error("getStaffDashboard error:", err);
+    res.status(500).json({ message: "Server error fetching staff dashboard" });
   }
 };

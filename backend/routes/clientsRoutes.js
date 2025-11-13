@@ -5,6 +5,8 @@ import {
   deleteClient,
   getAllClients,
   getClientById,
+  getClientAppointmentHistory,
+  getClientsDashboard,
   updateClient,
 } from '../controllers/clientsController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
@@ -14,6 +16,12 @@ const router = express.Router();
 
 // All routes are protected by authMiddleware
 router.use(authMiddleware);
+
+// DASHBOARD OVERVIEW (must be before parameterized routes)
+router.get("/dashboard/overview", getClientsDashboard);
+
+// GET CLIENT APPOINTMENT HISTORY (must be before parameterized routes)
+router.get("/:client_id/history", permissionMiddleware("client_read_single"), getClientAppointmentHistory);
 
 // READ all clients
 router.get("/", permissionMiddleware("client_read_all"), getAllClients);

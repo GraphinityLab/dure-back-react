@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 
 import axiosInstance from '../../../utils/axiosInstance';
+import PremiumSelect from '../common/PremiumSelect';
 
 const passwordStrength = (password) => {
   const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
@@ -225,12 +226,19 @@ const CreateStaffModal = ({ onClose, onSuccess }) => {
           <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
           <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
 
-          <select name="role_id" value={form.role_id} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4] w-full">
-            <option value="">Select Role</option>
-            {roles.map((role) => (
-              <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
-            ))}
-          </select>
+          <PremiumSelect
+            value={form.role_id}
+            onChange={handleChange}
+            options={[
+              { value: "", label: "Select Role" },
+              ...roles.map((role) => ({
+                value: role.role_id,
+                label: role.role_name,
+              })),
+            ]}
+            placeholder="Select Role"
+            className="w-full"
+          />
 
           <input type="text" name="phone_number" placeholder="Phone (optional)" value={form.phone_number} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
           <input type="text" name="address" placeholder="Address" value={form.address} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />

@@ -3,15 +3,18 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  FaInfoCircle,
-  FaTrash,
-} from 'react-icons/fa';
+  RefreshCcw,
+  History,
+  AlertTriangle,
+} from 'lucide-react';
 
 import axiosInstance from '../../utils/axiosInstance';
 import MessageBanner from '../components/appointments/MessageBanner';
 import { setTimedMessage } from '../components/appointments/utils';
+import HistoryList from '../components/history/HistoryList';
+import HistoryMoreInfoModal from '../components/history/HistoryMoreInfoModal';
 
 const HistoryPage = () => {
   const [history, setHistory] = useState([]);
@@ -44,7 +47,7 @@ const HistoryPage = () => {
       setActionLoading(true);
       await axiosInstance.delete(`/history/${history_id}`);
       setTimedMessage(setMessage, 'History record deleted successfully', 'success');
-      fetchHistory();
+      await fetchHistory();
     } catch (err) {
       console.error(err);
       setTimedMessage(setMessage, err?.response?.data?.message || 'Failed to delete history record', 'error');
@@ -53,101 +56,156 @@ const HistoryPage = () => {
     }
   };
 
-  return (
-    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
-      {actionLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-14 h-14 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  if (loading) {
+    return (
+      <section className="relative w-full py-12 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="h-12 w-72 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+            <div className="h-12 w-96 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+          </div>
+          {/* Premium skeleton cards */}
+          <div className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-32 rounded-2xl bg-gradient-to-r from-white/30 via-white/20 to-white/30 backdrop-blur-sm border border-white/30 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative overflow-x-hidden w-full py-8 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-96 h-96 bg-[#c1a38f]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#a78974]/10 rounded-full blur-3xl" />
+      </div>
+
+      {/* Action loading overlay */}
+      {actionLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-white/50 rounded-full animate-spin" style={{ animationDuration: '0.8s' }} />
+          </div>
+        </motion.div>
       )}
 
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-[Soligant] tracking-tight">Appointment History</h1>
-          <button
-            onClick={fetchHistory}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow"
+      <div className="relative max-w-7xl mx-auto z-10">
+        {/* Premium Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="text-5xl md:text-6xl font-[Soligant] tracking-tight bg-gradient-to-r from-[#3c2b21] via-[#5f4b5a] to-[#3c2b21] bg-clip-text text-transparent mb-2"
+              >
+                Appointment History
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-sm text-[#6b5c55] font-medium"
+              >
+                View and manage completed appointment records
+              </motion.p>
+            </div>
+
+            {/* Stats Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg"
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#3c2b21]">{history.length}</div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Total Records</div>
+              </div>
+              <div className="h-12 w-px bg-[#e8dcd4]" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-emerald-600">
+                  {history.filter(h => h.status?.toLowerCase() === 'completed').length}
+                </div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Completed</div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Premium Action Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex justify-end"
           >
-            Refresh
-          </button>
-        </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={fetchHistory}
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white hover:from-[#5f4b5a] hover:to-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+            >
+              <RefreshCcw className="w-5 h-5" />
+              <span>Refresh</span>
+            </motion.button>
+          </motion.div>
+        </motion.div>
 
-        {message && <MessageBanner message={message} setMessage={setMessage} />}
+        {/* Messages */}
+        <AnimatePresence>{message && <MessageBanner message={message} setMessage={setMessage} />}</AnimatePresence>
 
-        {loading ? (
-          <div className="w-full flex justify-center mt-12">
-            <div className="w-14 h-14 border-4 border-[#c1a38f] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : history.length === 0 ? (
-          <p className="text-center text-gray-500 mt-12">No appointment history found.</p>
+        {/* Premium Content Area */}
+        {history.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-12 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-16 text-center"
+          >
+            <div className="inline-flex p-6 rounded-3xl bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200/50 mb-6">
+              <History className="h-16 w-16 text-slate-600" />
+            </div>
+            <h3 className="text-3xl font-semibold text-[#3c2b21] mb-3">No History Found</h3>
+            <p className="text-[#6b5c55] max-w-md mx-auto">
+              There are no appointment history records yet. History will appear here once appointments are completed or cancelled.
+            </p>
+          </motion.div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-xl border border-[#e8dcd4] shadow-sm">
-              <thead className="bg-[#c1a38f]/20">
-                <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Client</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Service</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold">Start - End</th>
-                  <th className="px-4 py-2 text-center text-sm font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((item) => (
-                  <tr key={item.history_id} className="border-t border-[#e8dcd4] hover:bg-[#f9f5f2] text-sm">
-                    <td className="px-4 py-2 font-[Soligant] truncate">{item.client_name}</td>
-                    <td className="px-4 py-2 truncate">{item.service_name}</td>
-                    <td className="px-4 py-2 truncate">{item.start_time} - {item.end_time}</td>
-                    <td className="px-4 py-2 flex justify-center gap-2">
-                      <button
-                        onClick={() => setModalData(item)}
-                        className="p-2 rounded-full bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition"
-                      >
-                        <FaInfoCircle className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.history_id)}
-                        className="p-2 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition"
-                      >
-                        <FaTrash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <HistoryList
+            history={history}
+            onInfo={(item) => setModalData(item)}
+            onDelete={handleDelete}
+          />
         )}
       </div>
 
-      {/* Modal */}
-      {modalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg overflow-y-auto max-h-[80vh]">
-            <h2 className="text-2xl font-semibold mb-4">Appointment Details</h2>
-            <div className="space-y-2 text-sm text-gray-700">
-              <p><strong>Client:</strong> {modalData.client_name}</p>
-              <p><strong>Service:</strong> {modalData.service_name}</p>
-              <p><strong>Price:</strong> {modalData.service_price}</p>
-              <p><strong>Category:</strong> {modalData.service_category || '-'}</p>
-              <p><strong>Status:</strong> {modalData.status}</p>
-              <p><strong>Notes:</strong> {modalData.notes || '-'}</p>
-              <p><strong>Staff ID:</strong> {modalData.staff_id || 'N/A'}</p>
-              <p><strong>Changed By:</strong> {modalData.changed_by || 'system'}</p>
-              <p><strong>Appointment Date:</strong> {new Date(modalData.appointment_date).toLocaleDateString()}</p>
-              <p><strong>Start - End:</strong> {modalData.start_time} - {modalData.end_time}</p>
-              <p><strong>Created At:</strong> {new Date(modalData.created_at).toLocaleString()}</p>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setModalData(null)}
-                className="px-4 py-2 bg-[#3e2e3d] text-white rounded-lg hover:bg-[#5f4b5a] transition"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Premium Modal */}
+      <AnimatePresence>
+        {modalData && (
+          <HistoryMoreInfoModal
+            item={modalData}
+            onClose={() => setModalData(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 };

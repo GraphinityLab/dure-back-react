@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getLogs } from '../controllers/logController.js';
+import { getLogs, getLogsDashboard } from '../controllers/logController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { permissionMiddleware } from '../middleware/permissionMiddleware.js';
 
@@ -10,6 +10,9 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // -------------------- LOG ROUTES --------------------
+
+// DASHBOARD OVERVIEW (must be before parameterized routes)
+router.get('/dashboard/overview', getLogsDashboard);
 
 // READ all logs
 router.get('/', permissionMiddleware('logs_read_all'), getLogs);

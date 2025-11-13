@@ -7,6 +7,9 @@ import {
   Download,
   ChevronDown,
   Search as SearchIcon,
+  X,
+  Users,
+  AlertTriangle,
 } from "lucide-react";
 
 import axiosInstance from "../../utils/axiosInstance";
@@ -17,6 +20,7 @@ import ClientMoreInfoModal from "../components/clients/ClientMoreInfoModal";
 import CreateClientModal from "../components/clients/CreateClientModal";
 import DeleteClientModal from "../components/clients/DeleteClientModal";
 import EditClientModal from "../components/clients/EditClientModal";
+import PremiumSelect from "../components/common/PremiumSelect";
 
 /* -------------------------------------------------------------------------- */
 /* Small utilities                                                             */
@@ -181,150 +185,238 @@ const ClientsPage = () => {
   const total = clients.length;
   const shown = filteredClients.length;
 
-  return (
-    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
-      {/* Action overlay */}
-      {actionLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-14 h-14 border-4 border-white border-t-transparent rounded-full animate-spin" />
+  if (loading) {
+    return (
+      <section className="relative w-full py-12 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="h-12 w-72 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+            <div className="h-12 w-96 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+          </div>
+          {/* Premium skeleton cards */}
+          <div className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-32 rounded-2xl bg-gradient-to-r from-white/30 via-white/20 to-white/30 backdrop-blur-sm border border-white/30 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative overflow-x-hidden w-full py-8 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-96 h-96 bg-[#c1a38f]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#a78974]/10 rounded-full blur-3xl" />
+      </div>
+
+      {/* Action loading overlay */}
+      {actionLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-white/50 rounded-full animate-spin" style={{ animationDuration: '0.8s' }} />
+          </div>
+        </motion.div>
       )}
 
-      <div className="relative max-w-6xl mx-auto z-10">
-        {/* Header */}
-        <div className="flex flex-col gap-4 mb-6 w-full">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="min-w-0"
-            >
-              <h1 className="text-4xl md:text-5xl font-[Soligant] tracking-tight truncate">
+      <div className="relative max-w-7xl mx-auto z-10">
+        {/* Premium Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="text-5xl md:text-6xl font-[Soligant] tracking-tight bg-gradient-to-r from-[#3c2b21] via-[#5f4b5a] to-[#3c2b21] bg-clip-text text-transparent mb-2"
+              >
                 Clients
-              </h1>
-              <div className="mt-1 text-sm text-[#6e5a4f]">
-                Showing <span className="font-medium">{shown}</span> of{" "}
-                <span className="font-medium">{total}</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-sm text-[#6b5c55] font-medium"
+              >
+                Manage and track all your clients
+              </motion.p>
+            </div>
+
+            {/* Stats Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg"
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#3c2b21]">{total}</div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Total</div>
+              </div>
+              <div className="h-12 w-px bg-[#e8dcd4]" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{shown}</div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Showing</div>
               </div>
             </motion.div>
+          </div>
 
-            {/* Toolbar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
-              {/* Search */}
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b7a71]" />
+          {/* Premium Search and Filters Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-3 w-full"
+          >
+            <div className="relative flex-1 group">
+              <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-white/60 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300" />
+              <div className="relative flex items-center">
+                <div className="absolute left-4 p-2 rounded-lg bg-white/50 backdrop-blur-sm">
+                  <SearchIcon className="h-5 w-5 text-[#6b5c55]" />
+                </div>
                 <input
                   ref={searchRef}
                   type="text"
-                  placeholder='Search "akshat", "bolton", or email'
+                  placeholder="Search by name, email, phone, or city..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-2 rounded-lg border border-[#e8dcd4] bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-[#c1a38f] min-w-[260px]"
+                  className="w-full pl-14 pr-12 py-3.5 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#c1a38f]/50 focus:border-[#c1a38f] text-sm md:text-base placeholder:text-[#9b8a83] shadow-lg transition-all duration-300"
                 />
+                {searchQuery && (
+                  <motion.button
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Clear search"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 p-1.5 rounded-lg bg-white/60 hover:bg-white/80 backdrop-blur-sm transition-colors"
+                  >
+                    <X className="h-4 w-4 text-[#6b5c55]" />
+                  </motion.button>
+                )}
               </div>
+            </div>
 
+            <div className="flex gap-3">
               {/* Sort */}
               <div className="flex items-center gap-2">
-                <div className="relative">
-                  <select
-                    value={sortKey}
-                    onChange={(e) => setSortKey(e.target.value)}
-                    className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-[#e8dcd4] bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-[#c1a38f]"
-                  >
-                    <option value="first_name">First name</option>
-                    <option value="last_name">Last name</option>
-                    <option value="email">Email</option>
-                    <option value="city">City</option>
-                    <option value="created">Created</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b7a71]" />
-                </div>
-
-                <button
-                  onClick={() =>
-                    setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-                  }
-                  className="px-3 py-2 rounded-lg border border-[#e8dcd4] bg-white/80 text-sm hover:bg-white transition"
+                <PremiumSelect
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value)}
+                  options={[
+                    { value: "first_name", label: "First name" },
+                    { value: "last_name", label: "Last name" },
+                    { value: "email", label: "Email" },
+                    { value: "city", label: "City" },
+                    { value: "created", label: "Created" },
+                  ]}
+                  className="min-w-[140px]"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                  className="px-4 py-3.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/50 hover:bg-white/90 text-sm font-medium shadow-lg transition-all duration-300"
                   title={`Sort ${sortDir === "asc" ? "descending" : "ascending"}`}
                 >
                   {sortDir === "asc" ? "Asc" : "Desc"}
-                </button>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={fetchClients}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow"
-                  title="Refresh (R)"
-                >
-                  <RefreshCcw className="w-4 h-4" />
-                  Refresh
-                </motion.button>
-
-                <button
-                  onClick={() => downloadBlobCSV(filteredClients)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#e8dcd4] bg-white/80 hover:bg-white transition"
-                  title="Export CSV"
-                >
-                  <Download className="w-4 h-4" />
-                  Export
-                </button>
-
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowCreateModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#c1a38f] text-white hover:bg-[#a78974] transition shadow"
-                  title="New client (N)"
-                >
-                  <Plus className="w-4 h-4" />
-                  New Client
                 </motion.button>
               </div>
+
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={fetchClients}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white hover:from-[#5f4b5a] hover:to-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+                title="Refresh (R)"
+              >
+                <RefreshCcw className="w-5 h-5" />
+                <span className="hidden sm:inline">Refresh</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => downloadBlobCSV(filteredClients)}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/50 hover:bg-white/90 text-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl"
+                title="Export CSV"
+              >
+                <Download className="w-5 h-5" />
+                <span className="hidden sm:inline">Export</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] hover:from-[#a78974] hover:to-[#8d6f5a] text-white transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+                title="New client (N)"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">New Client</span>
+              </motion.button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Messages */}
         <AnimatePresence>{message && <MessageBanner message={message} />}</AnimatePresence>
 
-        {/* Content */}
-        {loading ? (
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-24 rounded-xl border border-white/60 bg-white/60 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : shown === 0 ? (
-          <div className="rounded-xl border border-white/60 bg-white/70 p-10 text-center">
-            <div className="text-lg font-medium text-[#3e2e3d]">
-              No clients match your search
+        {/* Premium Content Area */}
+        {shown === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-12 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-16 text-center"
+          >
+            <div className="inline-flex p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 mb-6">
+              <Users className="h-16 w-16 text-blue-600" />
             </div>
-            <div className="text-sm text-[#6e5a4f] mt-1">
-              Try a different keyword or clear the search box
-            </div>
-            <div className="mt-4 flex justify-center gap-2">
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-4 py-2 rounded-lg border border-[#e8dcd4] bg-white hover:bg-white/90 transition"
-              >
-                Clear search
-              </button>
-              <button
+            <h3 className="text-3xl font-semibold text-[#3c2b21] mb-3">No Clients Found</h3>
+            <p className="text-[#6b5c55] max-w-md mx-auto mb-6">
+              {searchQuery
+                ? "No clients match your search criteria. Try adjusting your search terms."
+                : "You don't have any clients yet. Create one to get started!"}
+            </p>
+            <div className="flex justify-center gap-3">
+              {searchQuery && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSearchQuery("")}
+                  className="px-6 py-3 rounded-xl bg-white/70 backdrop-blur-xl border border-white/50 text-[#3c2b21] font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  Clear Search
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 rounded-lg bg-[#c1a38f] text-white hover:bg-[#a78974] transition"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] text-white font-medium shadow-lg hover:shadow-xl transition-all"
               >
-                New client
-              </button>
+                New Client
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <ClientList
             clients={filteredClients}

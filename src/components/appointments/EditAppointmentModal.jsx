@@ -7,6 +7,7 @@ import React, {
 import { motion } from 'framer-motion';
 
 import axiosInstance from '../../../utils/axiosInstance';
+import PremiumSelect from '../common/PremiumSelect';
 import { setTimedMessage } from './utils';
 
 const BUSINESS_HOURS = { start: "09:00", end: "17:00" };
@@ -219,59 +220,53 @@ const EditAppointmentModal = ({
 
         {/* Date */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-2 text-[#3c2b21]">
             Select New Date
           </label>
-          <select
-            className="w-full border border-[#e8dcd4] rounded-md p-2"
+          <PremiumSelect
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
-          >
-            {availableDates.map((d) => (
-              <option key={d.date} value={d.date}>
-                {d.display}
-              </option>
-            ))}
-          </select>
+            options={availableDates.map((d) => ({
+              value: d.date,
+              label: d.display,
+            }))}
+            placeholder="Select a date"
+          />
         </div>
 
         {/* Time */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-2 text-[#3c2b21]">
             Select New Time
           </label>
-          <select
-            className="w-full border border-[#e8dcd4] rounded-md p-2"
+          <PremiumSelect
             value={newTime}
             onChange={(e) => setNewTime(e.target.value)}
-          >
-            {availableTimes.length > 0 ? (
-              availableTimes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))
-            ) : (
-              <option disabled>No available times</option>
-            )}
-          </select>
+            options={
+              availableTimes.length > 0
+                ? availableTimes.map((t) => ({ value: t, label: t }))
+                : [{ value: "", label: "No available times", disabled: true }]
+            }
+            placeholder="Select a time"
+            disabled={availableTimes.length === 0}
+          />
         </div>
 
         {/* Staff */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Assign Staff</label>
-          <select
-            className="w-full border border-[#e8dcd4] rounded-md p-2"
+          <label className="block text-sm font-medium mb-2 text-[#3c2b21]">Assign Staff</label>
+          <PremiumSelect
             value={selectedStaffId}
             onChange={(e) => setSelectedStaffId(e.target.value)}
-          >
-            <option value="">Select Staff</option>
-            {staff.map((s) => (
-              <option key={s.staff_id} value={s.staff_id}>
-                {s.first_name} {s.last_name}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Select Staff" },
+              ...staff.map((s) => ({
+                value: s.staff_id,
+                label: `${s.first_name} ${s.last_name}`,
+              })),
+            ]}
+            placeholder="Select Staff"
+          />
         </div>
 
         {/* Notes */}
@@ -287,21 +282,18 @@ const EditAppointmentModal = ({
 
         {/* Decline */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-2 text-[#3c2b21]">
             Reason for Decline
           </label>
-          <select
-            className="w-full border border-[#e8dcd4] rounded-md p-2"
+          <PremiumSelect
             value={declineReason}
             onChange={(e) => setDeclineReason(e.target.value)}
-          >
-            <option value="">Select a reason</option>
-            {DECLINE_REASONS.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Select a reason" },
+              ...DECLINE_REASONS.map((r) => ({ value: r, label: r })),
+            ]}
+            placeholder="Select a reason"
+          />
         </div>
 
         {declineReason === "Other" && (

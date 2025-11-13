@@ -1,6 +1,11 @@
 import { pool } from '../utils/db.js';
 import { sendEmail } from '../utils/emailUtils.js';
 import { logChange } from '../utils/logChange.js';
+import {
+  checkStaffAvailability,
+  checkAppointmentConflicts,
+  validateBusinessHours,
+} from '../utils/appointmentValidation.js';
 
 // -------------------- Helper: Get current user --------------------
 const getChangedBy = (req) => {
@@ -100,6 +105,52 @@ export const createAppointment = async (req, res) => {
     const formattedStart = combineDateTime(appointment_date, start_time);
     const formattedEnd = combineDateTime(appointment_date, end_time);
 
+    // Validate business hours
+    if (!validateBusinessHours(appointment_date, start_time, end_time)) {
+      return res.status(400).json({
+        message: "Appointment time is outside business hours (09:00 - 17:00)"
+      });
+    }
+
+    // Check for conflicts if staff is assigned
+    if (staff_id) {
+      const availability = await checkStaffAvailability(
+        staff_id,
+        appointment_date,
+        start_time,
+        end_time
+      );
+
+      if (!availability.available) {
+        return res.status(409).json({
+          message: availability.reason,
+          conflicts: availability.conflicts,
+          code: 'STAFF_UNAVAILABLE'
+        });
+      }
+    }
+
+    // Check for general conflicts (same client, same time)
+    const conflicts = await checkAppointmentConflicts(
+      appointment_date,
+      start_time,
+      end_time
+    );
+
+    if (conflicts.hasConflict) {
+      // Allow if it's the same client (they might want multiple services)
+      const sameClientConflict = conflicts.conflicts.find(
+        c => c.client_id === client_id
+      );
+      if (!sameClientConflict) {
+        return res.status(409).json({
+          message: "Time slot conflicts with existing appointment(s)",
+          conflicts: conflicts.conflicts,
+          code: 'TIME_CONFLICT'
+        });
+      }
+    }
+
     const [result] = await pool.query(
       `
       INSERT INTO appointments (client_id, service_id, appointment_date, start_time, end_time, notes, staff_id, status)
@@ -138,6 +189,16 @@ export const createAppointment = async (req, res) => {
       },
     });
 
+    // Schedule appointment reminders (async, don't block response)
+    try {
+      const { scheduleAppointmentReminders } = await import('../controllers/notificationsController.js');
+      scheduleAppointmentReminders(appointment_id, appointment_date, start_time).catch(err => {
+        console.error("Error scheduling reminders:", err);
+      });
+    } catch (err) {
+      console.error("Error importing reminder scheduler:", err);
+    }
+
     res
       .status(201)
       .json({ message: "Appointment created successfully", appointment_id });
@@ -151,17 +212,77 @@ export const createAppointment = async (req, res) => {
 export const updateAppointment = async (req, res) => {
   try {
     const { appointment_id } = req.params;
-    const { appointment_date, start_time, end_time, notes, staff_id } =
+    const { appointment_date, start_time, end_time, notes, staff_id, status } =
       req.body;
 
+    // Get existing appointment
     const [existing] = await pool.query(
       "SELECT * FROM appointments WHERE appointment_id = ?",
       [appointment_id]
     );
-    if (!existing.length)
-      return res.status(404).json({ message: "Appointment not found" });
 
-    const oldData = existing[0];
+    if (existing.length === 0) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const existingAppt = existing[0];
+    const updateDate = appointment_date || existingAppt.appointment_date;
+    const updateStartTime = start_time || existingAppt.start_time?.slice(0, 5);
+    const updateEndTime = end_time || existingAppt.end_time?.slice(0, 5);
+    const updateStaffId = staff_id !== undefined ? staff_id : existingAppt.staff_id;
+
+    // Validate business hours if time is being changed
+    if (start_time || end_time) {
+      if (!validateBusinessHours(updateDate, updateStartTime, updateEndTime)) {
+        return res.status(400).json({
+          message: "Appointment time is outside business hours (09:00 - 17:00)"
+        });
+      }
+    }
+
+    // Check for conflicts if staff or time is being changed
+    if ((staff_id !== undefined || start_time || end_time || appointment_date) && updateStaffId) {
+      const availability = await checkStaffAvailability(
+        updateStaffId,
+        updateDate,
+        updateStartTime,
+        updateEndTime,
+        appointment_id // Exclude current appointment
+      );
+
+      if (!availability.available) {
+        return res.status(409).json({
+          message: availability.reason,
+          conflicts: availability.conflicts,
+          code: 'STAFF_UNAVAILABLE'
+        });
+      }
+    }
+
+    // Check for general conflicts
+    if (start_time || end_time || appointment_date) {
+      const conflicts = await checkAppointmentConflicts(
+        updateDate,
+        updateStartTime,
+        updateEndTime,
+        appointment_id
+      );
+
+      if (conflicts.hasConflict) {
+        const sameClientConflict = conflicts.conflicts.find(
+          c => c.client_id === existingAppt.client_id
+        );
+        if (!sameClientConflict) {
+          return res.status(409).json({
+            message: "Time slot conflicts with existing appointment(s)",
+            conflicts: conflicts.conflicts,
+            code: 'TIME_CONFLICT'
+          });
+        }
+      }
+    }
+
+    const oldData = existingAppt;
 
     const combineDateTime = (date, time) => {
       if (!date || !time) return null;

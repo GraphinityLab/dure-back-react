@@ -9,12 +9,20 @@ import session from 'express-session';
 
 import appointmentRoutes from './routes/appointmentsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import clockInOutRoutes from './routes/clockInOutRoutes.js';
 import clientsRoutes from './routes/clientsRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 import historyRoutes from './routes/historyRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import rolesPermissionsRoutes from './routes/rolesPermissionsRoutes.js';
 import servicesRoutes from './routes/servicesRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
+import staffSchedulesRoutes from './routes/staffSchedulesRoutes.js';
+import timeOffRoutes from './routes/timeOffRoutes.js';
+import recurringAppointmentsRoutes from './routes/recurringAppointmentsRoutes.js';
+import waitlistRoutes from './routes/waitlistRoutes.js';
+import notificationsRoutes from './routes/notificationsRoutes.js';
+import skillsCertificationsRoutes from './routes/skillsCertificationsRoutes.js';
 import { testConnection } from './utils/db.js';
 
 const require = createRequire(import.meta.url);
@@ -108,10 +116,19 @@ app.get("/debug-session", (req, res) => {
 
 // -------------------- ROUTES --------------------
 app.use("/api/auth", authRoutes);
+app.use("/api/clock", clockInOutRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/staff", staffRoutes);
+app.use("/api/staff-schedules", staffSchedulesRoutes);
+app.use("/api/time-off", timeOffRoutes);
+app.use("/api/recurring-appointments", recurringAppointmentsRoutes);
+app.use("/api/waitlist", waitlistRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/skills", skillsCertificationsRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/rolePermissions", rolesPermissionsRoutes);
+app.use("/api/roles", rolesPermissionsRoutes); // Alias for convenience
 app.use("/api/history", historyRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/appointments", appointmentRoutes);

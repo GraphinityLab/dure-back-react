@@ -19,7 +19,26 @@ export function setTimedMessage(setMessage, text, type = "success", duration = 3
  */
 export function formatDate(dateStr) {
   if (!dateStr) return "N/A";
+  
+  // Handle YYYY-MM-DD format directly
+  if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    if (isNaN(date.getTime())) return "N/A";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+  
+  // Try parsing as Date
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    console.warn("Invalid date string:", dateStr);
+    return "N/A";
+  }
+  
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",

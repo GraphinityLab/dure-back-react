@@ -5,6 +5,7 @@ import {
   deleteHistory,
   getAppointmentHistory,
   getHistoryByID,
+  getHistoryDashboard,
 } from '../controllers/historyController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { permissionMiddleware } from '../middleware/permissionMiddleware.js';
@@ -15,6 +16,9 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // -------------------- HISTORY ROUTES --------------------
+
+// DASHBOARD OVERVIEW (must be before parameterized routes)
+router.get("/dashboard/overview", getHistoryDashboard);
 
 // READ all appointment history (requires history_read_all)
 router.get("/", permissionMiddleware("history_read_all"), getAppointmentHistory);

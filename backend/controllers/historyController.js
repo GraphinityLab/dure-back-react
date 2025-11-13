@@ -152,3 +152,43 @@ export const deleteHistory = async (req, res) => {
     res.status(500).json({ message: "Server error deleting history record" });
   }
 };
+
+// -------------------- DASHBOARD OVERVIEW FOR HISTORY --------------------
+export const getHistoryDashboard = async (req, res) => {
+  try {
+    // Total history records
+    const [[totalHistory]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM appointmenthistory`
+    );
+
+    // This month's history records
+    const [[thisMonth]] = await pool.query(
+      `SELECT COUNT(*) AS count 
+       FROM appointmenthistory 
+       WHERE MONTH(created_at) = MONTH(CURDATE()) 
+       AND YEAR(created_at) = YEAR(CURDATE())`
+    );
+
+    // Completed appointments
+    const [[completedHistory]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM appointmenthistory WHERE status = 'completed'`
+    );
+
+    // Cancelled appointments
+    const [[cancelledHistory]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM appointmenthistory WHERE status = 'cancelled'`
+    );
+
+    res.json({
+      counts: {
+        totalRecords: totalHistory.count || 0,
+        thisMonth: thisMonth.count || 0,
+        completed: completedHistory.count || 0,
+        cancelled: cancelledHistory.count || 0,
+      },
+    });
+  } catch (err) {
+    console.error("getHistoryDashboard error:", err);
+    res.status(500).json({ message: "Server error fetching history dashboard" });
+  }
+};

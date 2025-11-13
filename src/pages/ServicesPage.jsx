@@ -8,13 +8,12 @@ import {
   AnimatePresence,
   motion,
 } from 'framer-motion';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, Search as SearchIcon, X, Package, Plus } from 'lucide-react';
 import {
   FaCameraRetro,
   FaCut,
   FaFeather,
   FaLeaf,
-  FaPlus,
   FaSnowflake,
   FaSpa,
 } from 'react-icons/fa';
@@ -138,102 +137,239 @@ const ServicesPage = () => {
 
   const categories = ["All", ...Array.from(new Set(services.map((s) => s.category)))];
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="text-center mt-10 font-[CaviarDreams]">
-        Loading services...
-      </div>
-    );
-
-  return (
-    <section className="relative overflow-x-hidden w-full py-20 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
-      {/* -------------------- LOADING SPINNER -------------------- */}
-      {actionLoading && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50">
-          <div className="w-14 h-14 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      <div className="relative max-w-6xl mx-auto z-10">
-        {/* -------------------- HEADER + SEARCH + ADD -------------------- */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 w-full">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-[Soligant] tracking-tight truncate"
-          >
-            Services
-          </motion.h1>
-
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            <input
-              type="text"
-              placeholder="Search by name or category..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-lg border border-[#e8dcd4] focus:outline-none focus:ring-2 focus:ring-[#c1a38f] text-sm md:text-base"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={fetchData}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3e2e3d] text-white hover:bg-[#5f4b5a] transition shadow"
-            >
-              <RefreshCcw className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#c1a38f] text-white hover:bg-[#a78974] transition shadow"
-            >
-              <FaPlus className="w-4 h-4" />
-              Add
-            </motion.button>
+      <section className="relative w-full py-12 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="h-12 w-72 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+            <div className="h-12 w-96 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
           </div>
-        </div>
-
-        {/* -------------------- CATEGORY TABS -------------------- */}
-        <div className="mb-4 w-full">
-          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_120px] gap-4 px-4 py-1 font-[CaviarDreams] text-[#3e2e3d] text-sm">
-            {categories.map((cat) => (
-              <div key={cat} className="relative group">
-                <button
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`truncate px-2 py-1 rounded-full text-xs font-[CaviarDreams] transition text-center w-full ${
-                    selectedCategory === cat
-                      ? "bg-[#3e2e3d] text-white"
-                      : "bg-white text-[#3e2e3d] border border-[#d8c9c9] hover:bg-[#f5eeee]"
-                  }`}
-                >
-                  {getCategoryIcon(cat)} {cat}
-                </button>
-
-                {/* Tooltip */}
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-[#3e2e3d] text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
-                  {cat}
-                </div>
-              </div>
+          {/* Premium skeleton cards */}
+          <div className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-32 rounded-2xl bg-gradient-to-r from-white/30 via-white/20 to-white/30 backdrop-blur-sm border border-white/30 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
             ))}
           </div>
         </div>
+      </section>
+    );
+  }
 
-        {/* -------------------- MESSAGE BANNER -------------------- */}
-        <AnimatePresence>
-          {message && <MessageBanner message={message} />}
-        </AnimatePresence>
+  return (
+    <section className="relative overflow-x-hidden w-full py-8 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen box-border">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-96 h-96 bg-[#c1a38f]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#a78974]/10 rounded-full blur-3xl" />
+      </div>
 
-        {/* -------------------- SERVICES LIST -------------------- */}
-        <ServiceList
-          services={categoryFilteredServices}
-          onEdit={(s) => {
-            setSelectedService(s);
-            setIsEditModalOpen(true);
-          }}
-          onDelete={(id) => setDeleteServiceId(id)}
-          onMoreInfo={(s) => setSelectedServiceForModal(s)}
-        />
+      {/* Action loading overlay */}
+      {actionLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-white/50 rounded-full animate-spin" style={{ animationDuration: '0.8s' }} />
+          </div>
+        </motion.div>
+      )}
+
+      <div className="relative max-w-7xl mx-auto z-10">
+        {/* Premium Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="text-5xl md:text-6xl font-[Soligant] tracking-tight bg-gradient-to-r from-[#3c2b21] via-[#5f4b5a] to-[#3c2b21] bg-clip-text text-transparent mb-2"
+              >
+                Services
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-sm text-[#6b5c55] font-medium"
+              >
+                Manage your service catalog and offerings
+              </motion.p>
+            </div>
+
+            {/* Stats Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg"
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#3c2b21]">{services.length}</div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Total</div>
+              </div>
+              <div className="h-12 w-px bg-[#e8dcd4]" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-teal-600">{categoryFilteredServices.length}</div>
+                <div className="text-xs text-[#6b5c55] uppercase tracking-wider">Showing</div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Premium Search and Filters Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-3 w-full mb-4"
+          >
+            <div className="relative flex-1 group">
+              <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-white/60 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300" />
+              <div className="relative flex items-center">
+                <div className="absolute left-4 p-2 rounded-lg bg-white/50 backdrop-blur-sm">
+                  <SearchIcon className="h-5 w-5 text-[#6b5c55]" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by name or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-14 pr-12 py-3.5 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#c1a38f]/50 focus:border-[#c1a38f] text-sm md:text-base placeholder:text-[#9b8a83] shadow-lg transition-all duration-300"
+                />
+                {searchQuery && (
+                  <motion.button
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Clear search"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 p-1.5 rounded-lg bg-white/60 hover:bg-white/80 backdrop-blur-sm transition-colors"
+                  >
+                    <X className="h-4 w-4 text-[#6b5c55]" />
+                  </motion.button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={fetchData}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white hover:from-[#5f4b5a] hover:to-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+              >
+                <RefreshCcw className="w-5 h-5" />
+                <span className="hidden sm:inline">Refresh</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] hover:from-[#a78974] hover:to-[#8d6f5a] text-white transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">Add Service</span>
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Premium Category Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-wrap gap-2"
+          >
+            {categories.map((cat) => (
+              <motion.button
+                key={cat}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(cat)}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
+                  ${selectedCategory === cat
+                    ? "bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white shadow-lg"
+                    : "bg-white/70 backdrop-blur-xl border border-white/50 text-[#3c2b21] hover:bg-white/90 shadow-sm hover:shadow-md"
+                  }
+                `}
+              >
+                <span className="text-base">{getCategoryIcon(cat)}</span>
+                <span>{cat}</span>
+              </motion.button>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* Messages */}
+        <AnimatePresence>{message && <MessageBanner message={message} />}</AnimatePresence>
+
+        {/* Premium Content Area */}
+        {categoryFilteredServices.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-12 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-16 text-center"
+          >
+            <div className="inline-flex p-6 rounded-3xl bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200/50 mb-6">
+              <Package className="h-16 w-16 text-teal-600" />
+            </div>
+            <h3 className="text-3xl font-semibold text-[#3c2b21] mb-3">No Services Found</h3>
+            <p className="text-[#6b5c55] max-w-md mx-auto mb-6">
+              {searchQuery || selectedCategory !== "All"
+                ? "No services match your search or filter criteria. Try adjusting your filters."
+                : "You don't have any services yet. Create one to get started!"}
+            </p>
+            <div className="flex justify-center gap-3">
+              {(searchQuery || selectedCategory !== "All") && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                  }}
+                  className="px-6 py-3 rounded-xl bg-white/70 backdrop-blur-xl border border-white/50 text-[#3c2b21] font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  Clear Filters
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] text-white font-medium shadow-lg hover:shadow-xl transition-all"
+              >
+                Add Service
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <ServiceList
+            services={categoryFilteredServices}
+            onEdit={(s) => {
+              setSelectedService(s);
+              setIsEditModalOpen(true);
+            }}
+            onDelete={(id) => setDeleteServiceId(id)}
+            onMoreInfo={(s) => setSelectedServiceForModal(s)}
+          />
+        )}
       </div>
 
       {/* -------------------- MODALS -------------------- */}
