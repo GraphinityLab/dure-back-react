@@ -49,8 +49,8 @@ export const getDashboardOverview = async (req, res) => {
       `SELECT COUNT(*) AS count 
        FROM appointmenthistory 
        WHERE status = 'completed' 
-       AND MONTH(completed_at) = MONTH(CURDATE()) 
-       AND YEAR(completed_at) = YEAR(CURDATE())`
+       AND MONTH(created_at) = MONTH(CURDATE()) 
+       AND YEAR(created_at) = YEAR(CURDATE())`
     );
 
     res.json({

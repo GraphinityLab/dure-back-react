@@ -156,7 +156,7 @@ export const getClientAppointmentHistory = async (req, res) => {
         ah.start_time,
         ah.end_time,
         ah.status,
-        ah.completed_at,
+        ah.created_at AS completed_at,
         ah.notes,
         ah.staff_id,
         s.first_name AS staff_first_name,
@@ -169,7 +169,7 @@ export const getClientAppointmentHistory = async (req, res) => {
          FROM clients 
          WHERE client_id = ?
        )
-       ORDER BY ah.completed_at DESC, ah.appointment_date DESC
+       ORDER BY ah.created_at DESC, ah.appointment_date DESC
        LIMIT 100`,
       [client_id]
     );
