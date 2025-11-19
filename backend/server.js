@@ -25,7 +25,7 @@ import staffRoutes from './routes/staffRoutes.js';
 import staffSchedulesRoutes from './routes/staffSchedulesRoutes.js';
 import timeOffRoutes from './routes/timeOffRoutes.js';
 import waitlistRoutes from './routes/waitlistRoutes.js';
-import { testConnection } from './utils/db.js';
+import { pool, testConnection } from './utils/db.js';
 
 const require = createRequire(import.meta.url);
 
@@ -73,14 +73,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-<<<<<<< HEAD
       secure: false,         // ❗ must stay false on localhost (no HTTPS)
       sameSite: "lax",       // ✅ Chrome-compatible for localhost
       path: "/",             // ✅ Ensure cookie is sent for all paths
-=======
-      secure: false, // ❗ must stay false on localhost (no HTTPS)
-      sameSite: "none", // ✅ Chrome-compatible for localhost
->>>>>>> df6e265de2d121a20e10a0e5276fe1b6756b303e
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     },
   })
@@ -165,10 +160,7 @@ const staffSeedData = [
 
 // Function to seed multiple staff
 async function seedStaff(staffList) {
-  let connection;
   try {
-    connection = await pool.getConnection();
-
     for (const staff of staffList) {
       try {
         const hashedPassword = await bcrypt.hash(staff.password, 10);
@@ -191,7 +183,7 @@ async function seedStaff(staffList) {
           staff.postal_code,
         ];
 
-        await connection.execute(sql, values);
+        await pool.execute(sql, values);
         console.log(`Staff '${staff.username}' created successfully.`);
       } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
@@ -203,8 +195,6 @@ async function seedStaff(staffList) {
     }
   } catch (error) {
     console.error("Error connecting to DB for staff seeding:", error);
-  } finally {
-    if (connection) connection.release();
   }
 }
 
