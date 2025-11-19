@@ -45,3 +45,39 @@ export async function getLogByID(req, res) {
     res.status(500).json({ message: "Server error fetching log" });
   }
 }
+
+/**
+ * Dashboard overview for logs
+ */
+export async function getLogsDashboard(req, res) {
+  try {
+    // Total logs
+    const [[totalLogs]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM ChangeLogs`
+    );
+
+    // Logs by action type
+    const [logsByAction] = await pool.query(`
+      SELECT action, COUNT(*) AS count
+      FROM ChangeLogs
+      GROUP BY action
+      ORDER BY count DESC
+    `);
+
+    // Recent logs count (last 24 hours)
+    const [[recentLogs]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM ChangeLogs WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`
+    );
+
+    res.json({
+      counts: {
+        totalLogs: totalLogs.count || 0,
+        recentLogs: recentLogs.count || 0,
+      },
+      logsByAction,
+    });
+  } catch (err) {
+    console.error("getLogsDashboard error:", err);
+    res.status(500).json({ message: "Server error fetching logs dashboard" });
+  }
+}

@@ -5,6 +5,7 @@ import {
   deleteStaff,
   getStaff,
   getStaffByID,
+  getStaffDashboard,
   updateStaff,
 } from '../controllers/staffController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
@@ -34,7 +35,11 @@ router.delete(
 );
 
 
+// DASHBOARD OVERVIEW (must be before parameterized routes)
+router.get("/dashboard/overview", authMiddleware, getStaffDashboard);
+
 // READ endpoints
 router.get("/", authMiddleware, permissionMiddleware("staff_read_all"), getStaff);
 router.get("/:staff_id", authMiddleware, permissionMiddleware("staff_read_single"), getStaffByID);
+
 export default router;

@@ -9,6 +9,7 @@ import {
   getPermissions,
   getPermissionsByRole,
   getRoles,
+  getRolesDashboard,
   removePermissionFromRole,
 } from '../controllers/rolePermissionsController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
@@ -18,6 +19,9 @@ const router = express.Router();
 
 // Protect all routes
 router.use(authMiddleware);
+
+// -------------------- DASHBOARD OVERVIEW (must be before parameterized routes) --------------------
+router.get('/dashboard/overview', getRolesDashboard);
 
 // -------------------- ROLES --------------------
 // GET all roles with permissions

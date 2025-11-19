@@ -138,3 +138,108 @@ export const deleteClient = async (req, res) => {
     res.status(500).json({ message: "Server error deleting client" });
   }
 };
+
+// -------------------- GET CLIENT APPOINTMENT HISTORY --------------------
+export const getClientAppointmentHistory = async (req, res) => {
+  try {
+    const { client_id } = req.params;
+
+    // Get completed appointments from history
+    const [history] = await pool.query(
+      `SELECT 
+        ah.appointment_id,
+        ah.client_name,
+        ah.service_name,
+        ah.service_price,
+        ah.service_category,
+        ah.appointment_date,
+        ah.start_time,
+        ah.end_time,
+        ah.status,
+        ah.created_at AS completed_at,
+        ah.notes,
+        ah.staff_id,
+        s.first_name AS staff_first_name,
+        s.last_name AS staff_last_name,
+        'history' AS source
+       FROM appointmenthistory ah
+       LEFT JOIN staff s ON ah.staff_id = s.staff_id
+       WHERE ah.client_name = (
+         SELECT CONCAT(first_name, ' ', last_name) 
+         FROM clients 
+         WHERE client_id = ?
+       )
+       ORDER BY ah.created_at DESC, ah.appointment_date DESC
+       LIMIT 100`,
+      [client_id]
+    );
+
+    // Get upcoming/pending appointments
+    const [appointments] = await pool.query(
+      `SELECT 
+        a.appointment_id,
+        CONCAT(c.first_name, ' ', c.last_name) AS client_name,
+        s.name AS service_name,
+        s.price AS service_price,
+        s.category AS service_category,
+        a.appointment_date,
+        TIME(a.start_time) AS start_time,
+        TIME(a.end_time) AS end_time,
+        a.status,
+        NULL AS completed_at,
+        a.notes,
+        a.staff_id,
+        st.first_name AS staff_first_name,
+        st.last_name AS staff_last_name,
+        'appointment' AS source
+       FROM appointments a
+       JOIN clients c ON a.client_id = c.client_id
+       JOIN services s ON a.service_id = s.service_id
+       LEFT JOIN staff st ON a.staff_id = st.staff_id
+       WHERE a.client_id = ?
+       AND a.status NOT IN ('cancelled', 'declined')
+       ORDER BY a.appointment_date DESC, a.start_time DESC
+       LIMIT 50`,
+      [client_id]
+    );
+
+    // Combine and sort by date
+    const allAppointments = [...history, ...appointments].sort((a, b) => {
+      const dateA = new Date(a.appointment_date + ' ' + (a.completed_at || a.start_time));
+      const dateB = new Date(b.appointment_date + ' ' + (b.completed_at || b.start_time));
+      return dateB - dateA;
+    });
+
+    res.json({ appointments: allAppointments });
+  } catch (err) {
+    console.error("getClientAppointmentHistory error:", err);
+    res.status(500).json({ message: "Server error fetching client appointment history" });
+  }
+};
+
+// -------------------- DASHBOARD OVERVIEW FOR CLIENTS --------------------
+export const getClientsDashboard = async (req, res) => {
+  try {
+    // Total clients
+    const [[totalClients]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM clients`
+    );
+
+    // Clients with appointments
+    const [[clientsWithAppointments]] = await pool.query(
+      `SELECT COUNT(DISTINCT client_id) AS count FROM appointments`
+    );
+
+    // Recent clients (last 30 days) - if you have a created_at field
+    // For now, we'll just return basic counts
+    res.json({
+      counts: {
+        totalClients: totalClients.count || 0,
+        clientsWithAppointments: clientsWithAppointments.count || 0,
+      },
+    });
+  } catch (err) {
+    console.error("getClientsDashboard error:", err);
+    res.status(500).json({ message: "Server error fetching clients dashboard" });
+  }
+};

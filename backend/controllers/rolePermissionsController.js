@@ -238,3 +238,37 @@ export const removePermissionFromRole = async (req, res) => {
     res.status(500).json({ message: "Server error removing permission from role" });
   }
 };
+
+// -------------------- DASHBOARD OVERVIEW FOR ROLES --------------------
+export const getRolesDashboard = async (req, res) => {
+  try {
+    // Total roles
+    const [[totalRoles]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM Roles`
+    );
+
+    // Total permissions
+    const [[totalPermissions]] = await pool.query(
+      `SELECT COUNT(*) AS count FROM Permissions`
+    );
+
+    // Roles with permission counts
+    const [rolesWithPermissionCounts] = await pool.query(`
+      SELECT r.role_id, r.role_name, COUNT(rp.permission_id) AS permission_count
+      FROM Roles r
+      LEFT JOIN RolePermissions rp ON r.role_id = rp.role_id
+      GROUP BY r.role_id, r.role_name
+    `);
+
+    res.json({
+      counts: {
+        totalRoles: totalRoles.count || 0,
+        totalPermissions: totalPermissions.count || 0,
+      },
+      rolesWithPermissionCounts,
+    });
+  } catch (err) {
+    console.error("getRolesDashboard error:", err);
+    res.status(500).json({ message: "Server error fetching roles dashboard" });
+  }
+};

@@ -14,12 +14,15 @@ import DashboardLayout from './components/DashboardLayout';
 import PrivateRoute from './components/PrivateRoute';
 import AppointmentsPage from './pages/AppointmentsPage';
 import ClientsPage from './pages/ClientsPage';
+import ClockInOutPage from './pages/ClockInOutPage';
 import HistoryPage from './pages/HistoryPage';
 import HomePage from './pages/HomePage';
 import LogsPage from './pages/LogsPage';
+import OverviewPage from './pages/OverviewPage';
 import RolesPage from './pages/RolesPage';
 import ServicesPage from './pages/ServicesPage';
 import StaffPage from './pages/StaffPage';
+import UserSettingsPage from './pages/UserSettingsPage';
 
 function App() {
   useEffect(() => {
@@ -49,14 +52,16 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<Navigate to="appointments" replace />} />
+          <Route index element={<OverviewPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="clients" element={<ClientsPage />} />
           <Route path="staff" element={<StaffPage />} />
+          <Route path="clock" element={<ClockInOutPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="roles" element={<RolesPage />} />
+          <Route path="settings" element={<UserSettingsPage />} />
         </Route>
 
         {/* Catch-all */}

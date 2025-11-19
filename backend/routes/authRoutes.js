@@ -3,8 +3,11 @@ import express from 'express';
 import {
   checkSession,
   checkUsernameOrEmail,
+  getCurrentUser,
+  getCurrentUserStats,
   login,
   logout,
+  updateCurrentUser,
 } from '../controllers/authController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
@@ -22,4 +25,14 @@ router.post("/logout", authMiddleware, logout);
 router.get("/check", authMiddleware, checkSession);
 
 router.post("/check-username", checkUsernameOrEmail);
+
+// Get current user info
+router.get("/me", authMiddleware, getCurrentUser);
+
+// Update current user info
+router.put("/me", authMiddleware, updateCurrentUser);
+
+// Get current user statistics
+router.get("/me/stats", authMiddleware, getCurrentUserStats);
+
 export default router;
