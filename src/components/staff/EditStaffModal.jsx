@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { motion } from 'framer-motion';
 
 import axiosInstance from '../../../utils/axiosInstance';
+import PremiumSelect from '../common/PremiumSelect';
 
 const passwordStrength = (password) => {
   const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
@@ -27,9 +28,23 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
     online: staff.online || false, // <-- added online
   });
 
+  const [roles, setRoles] = useState([]);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Fetch roles
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const { data } = await axiosInstance.get('/rolePermissions');
+        setRoles(data.roles || []);
+      } catch (err) {
+        console.error('Error fetching roles:', err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -154,13 +169,19 @@ const EditStaffModal = ({ staff, onClose, onSuccess }) => {
             onChange={handleChange}
             className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
           />
-          <input
-            type="text"
+          <PremiumSelect
             name="role_id"
-            placeholder="Role ID"
             value={form.role_id}
             onChange={handleChange}
-            className="px-3 py-2 rounded-lg border border-[#e8dcd4]"
+            options={[
+              { value: "", label: "Select Role" },
+              ...roles.map((role) => ({
+                value: role.role_id,
+                label: role.role_name,
+              })),
+            ]}
+            placeholder="Select Role"
+            className="w-full"
           />
           <input
             type="text"

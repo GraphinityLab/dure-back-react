@@ -227,6 +227,7 @@ const CreateStaffModal = ({ onClose, onSuccess }) => {
           <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} className="px-3 py-2 rounded-lg border border-[#e8dcd4]" />
 
           <PremiumSelect
+            name="role_id"
             value={form.role_id}
             onChange={handleChange}
             options={[

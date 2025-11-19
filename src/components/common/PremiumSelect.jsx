@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 const PremiumSelect = ({
   value,
   onChange,
+  name,
   options = [],
   placeholder = "Select an option",
   className = "",
@@ -42,7 +43,7 @@ const PremiumSelect = ({
     : placeholder;
 
   const handleSelect = (optionValue) => {
-    onChange({ target: { value: optionValue } });
+    onChange({ target: { name: name || '', value: optionValue } });
     setIsOpen(false);
   };
 
