@@ -2,16 +2,17 @@
 
 @font-face {
   font-family: "Soligant";
-  /* FIX: Changed 'soligant.ttf' to 'Soligant.ttf' to match file casing */
-  src: url("/font/Soligant.ttf") format("truetype");
+  src: url("/Soligant.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
+  font-display: swap; /* Prevents font loading errors from blocking render */
 }
 @font-face {
   font-family: "CaviarDreams";
-  src: url("/font/CaviarDreams.ttf") format("truetype");
+  src: url("/CaviarDreams.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 /* ============================================

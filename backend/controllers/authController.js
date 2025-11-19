@@ -31,12 +31,33 @@ export const login = async (req, res) => {
     }
 
     // 2️⃣ Compare hashed password
-    const isMatch = await bcrypt.compare(password, user.hashed_password);
+    // Check if password hash is valid bcrypt format (starts with $2a$, $2b$, or $2y$)
+    const hashPrefix = user.hashed_password?.substring(0, 4);
+    const isValidBcryptHash = hashPrefix === "$2a$" || hashPrefix === "$2b$" || hashPrefix === "$2y$";
+    
+    console.log("Attempting login for user:", user.username || user.email);
+    console.log("Hash format valid:", isValidBcryptHash);
+    console.log("Hash prefix:", hashPrefix);
+    
+    if (!isValidBcryptHash) {
+      console.error("Invalid password hash format for user:", user.username || user.email);
+      return res
+        .status(500)
+        .json({ message: "Password format error. Please contact administrator." });
+    }
+    
+    // Trim password to handle any whitespace issues
+    const trimmedPassword = password.trim();
+    const isMatch = await bcrypt.compare(trimmedPassword, user.hashed_password);
+    
     if (!isMatch) {
+      console.log("Password mismatch for user:", user.username || user.email);
       return res
         .status(401)
         .json({ message: "Invalid email/username or password" });
     }
+    
+    console.log("Login successful for user:", user.username || user.email);
 
     // 3️⃣ Get permissions based on user's role
     const [permissionRows] = await pool.query(
@@ -59,6 +80,7 @@ export const login = async (req, res) => {
       role_id: user.role_id,
       permissions,
     };
+    req.session.createdAt = Date.now();
 
     // Save session before sending response
     req.session.save((err) => {
@@ -67,6 +89,8 @@ export const login = async (req, res) => {
         return res.status(500).json({ message: "Server error saving session" });
       }
 
+      console.log("Session saved successfully for user:", user.username);
+      console.log("Sending login response...");
       res.json({
         message: "Login successful",
         user: req.session.user,
@@ -103,7 +127,8 @@ export const checkSession = (req, res) => {
       user: req.session.user,
     });
   }
-  res.status(401).json({ loggedIn: false, message: "No active session" });
+  // Return 200 (not 401) so axios interceptor doesn't redirect
+  res.json({ loggedIn: false, message: "No active session" });
 };
 
 // -------------------- CHECK USERNAME OR EMAIL --------------------

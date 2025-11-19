@@ -14,9 +14,15 @@ export default function PrivateRoute({ children }) {
     const checkSession = async () => {
       try {
         const res = await axiosInstance.get("/auth/check");
-        if (res.data?.loggedIn) setStatus("ok");
-        else setStatus("unauth");
-      } catch {
+        console.log("Session check response:", res.data);
+        if (res.data?.loggedIn) {
+          setStatus("ok");
+        } else {
+          console.log("No active session, redirecting to login");
+          setStatus("unauth");
+        }
+      } catch (err) {
+        console.error("Session check error:", err);
         setStatus("unauth");
       }
     };

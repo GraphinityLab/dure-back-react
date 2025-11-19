@@ -122,14 +122,27 @@ export default function HomePage() {
     dispatch({ type: "SET_LOADING", value: true });
 
     try {
-      await axiosInstance.post("/auth/login", {
+      console.log("Attempting login with:", { identifier: username, passwordProvided: !!password });
+      const response = await axiosInstance.post("/auth/login", {
         identifier: username,
         password,
       });
-      dispatch({ type: "RESET_LOCK" });
-      navigate("/dashboard", { replace: true });
+      
+      console.log("Login response:", response.data);
+      
+      if (response.data?.message === "Login successful") {
+        console.log("Login successful, navigating to dashboard...");
+        dispatch({ type: "RESET_LOCK" });
+        // Small delay to ensure cookie is set before navigation
+        await new Promise(resolve => setTimeout(resolve, 200));
+        navigate("/dashboard", { replace: true });
+      } else {
+        console.error("Login response invalid:", response.data);
+        throw new Error("Login response invalid");
+      }
     } catch (err) {
-      const msg = err?.response?.data?.message || "Login failed";
+      console.error("Login error:", err);
+      const msg = err?.response?.data?.message || err?.message || "Login failed";
       dispatch({ type: "SET_ERROR", value: msg });
       dispatch({ type: "FAIL_LOGIN" });
     } finally {

@@ -64,3 +64,4 @@ The following tables are actively used in the codebase and were kept:
 2. Drop and recreate the database using the cleaned SQL file
 3. Verify all functionality works as expected
 
+

@@ -21,8 +21,8 @@ router.post("/login", login);
 // Logout (clears session)
 router.post("/logout", authMiddleware, logout);
 
-// Check current session
-router.get("/check", authMiddleware, checkSession);
+// Check current session (no auth required - this is used to check if session exists)
+router.get("/check", checkSession);
 
 router.post("/check-username", checkUsernameOrEmail);
 

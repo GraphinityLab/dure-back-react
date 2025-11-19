@@ -73,6 +73,7 @@ app.use(
       httpOnly: true,
       secure: false,         // ❗ must stay false on localhost (no HTTPS)
       sameSite: "lax",       // ✅ Chrome-compatible for localhost
+      path: "/",             // ✅ Ensure cookie is sent for all paths
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     },
   })
