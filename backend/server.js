@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { createRequire } from 'node:module';
 
+import bcrypt from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -15,7 +16,10 @@ import logRoutes from './routes/logRoutes.js';
 import rolesPermissionsRoutes from './routes/rolesPermissionsRoutes.js';
 import servicesRoutes from './routes/servicesRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
-import { testConnection } from './utils/db.js';
+import {
+  pool,
+  testConnection,
+} from './utils/db.js';
 
 const require = createRequire(import.meta.url);
 
@@ -63,13 +67,12 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,         // ❗ must stay false on localhost (no HTTPS)
-      sameSite: "lax",       // ✅ Chrome-compatible for localhost
+      secure: false, // ❗ must stay false on localhost (no HTTPS)
+      sameSite: "none", // ✅ Chrome-compatible for localhost
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     },
   })
 );
-
 
 // -------------------- SESSION ENDPOINTS --------------------
 
@@ -123,6 +126,69 @@ testConnection();
 app.get("/", (req, res) => {
   res.json({ message: "Backend running" });
 });
+
+const staffSeedData = [
+  {
+    email: "testadmin@example.com",
+    username: "test",
+    password: "admin123",
+    role_id: 1,
+    first_name: "Test",
+    last_name: "User",
+    address: "1234 Main St",
+    city: "Brampton",
+    province: "ON",
+    postal_code: "M1A1A1",
+  },
+];
+
+// Function to seed multiple staff
+async function seedStaff(staffList) {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+
+    for (const staff of staffList) {
+      try {
+        const hashedPassword = await bcrypt.hash(staff.password, 10);
+
+        const sql = `
+          INSERT INTO staff 
+          (email, username, hashed_password, role_id, first_name, last_name, address, city, province, postal_code)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const values = [
+          staff.email,
+          staff.username,
+          hashedPassword,
+          staff.role_id,
+          staff.first_name,
+          staff.last_name,
+          staff.address,
+          staff.city,
+          staff.province,
+          staff.postal_code,
+        ];
+
+        await connection.execute(sql, values);
+        console.log(`Staff '${staff.username}' created successfully.`);
+      } catch (error) {
+        if (error.code === "ER_DUP_ENTRY") {
+          console.warn(`Staff '${staff.username}' already exists. Skipping.`);
+        } else {
+          console.error(`Error creating staff '${staff.username}':`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error connecting to DB for staff seeding:", error);
+  } finally {
+    if (connection) connection.release();
+  }
+}
+
+// --- Seed staff (run once) ---
+seedStaff(staffSeedData);
 
 // -------------------- START SERVER --------------------
 app.listen(PORT, () => {

@@ -7,7 +7,12 @@
  * @param {'success'|'error'} type - Message type
  * @param {number} duration - Duration in milliseconds (default 3000)
  */
-export function setTimedMessage(setMessage, text, type = "success", duration = 3000) {
+export function setTimedMessage(
+  setMessage,
+  text,
+  type = "success",
+  duration = 3000
+) {
   setMessage({ text, type });
   setTimeout(() => setMessage(null), duration);
 }
@@ -17,13 +22,25 @@ export function setTimedMessage(setMessage, text, type = "success", duration = 3
  * @param {string} dateStr
  * @returns {string} e.g., "Oct 29, 2025"
  */
+// utils.js
 export function formatDate(dateStr) {
-  if (!dateStr) return "N/A";
-  const date = new Date(dateStr);
+  if (!dateStr) return "-"; // handle null/undefined
+
+  // Ensure we have a string
+  const str = typeof dateStr === "string" ? dateStr : String(dateStr);
+
+  // Parse date
+  const date = new Date(str);
+
+  // Invalid date check
+  if (isNaN(date.getTime())) return "-";
+
+  // Format options (e.g., "Tue, Nov 12, 2025")
   return date.toLocaleDateString("en-US", {
-    year: "numeric",
+    weekday: "short",
     month: "short",
     day: "numeric",
+    year: "numeric",
   });
 }
 
