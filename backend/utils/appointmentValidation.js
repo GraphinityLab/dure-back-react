@@ -133,6 +133,19 @@ export const checkStaffAvailability = async (staffId, date, startTime, endTime, 
     const [conflicts] = await pool.query(conflictQuery, conflictParams);
 
     if (conflicts.length > 0) {
+      console.log('Staff availability conflict found:', {
+        staffId,
+        date,
+        startTime,
+        endTime,
+        excludeAppointmentId,
+        foundConflicts: conflicts.map(c => ({
+          id: c.appointment_id,
+          status: c.status,
+          time: `${c.start_time} - ${c.end_time}`
+        }))
+      });
+      
       return {
         available: false,
         conflicts: conflicts.map(c => ({
@@ -199,6 +212,7 @@ export const checkAppointmentConflicts = async (date, startTime, endTime, exclud
       hasConflict: conflicts.length > 0,
       conflicts: conflicts.map(c => ({
         appointment_id: c.appointment_id,
+        client_id: c.client_id,  // Add client_id for conflict resolution
         client_name: `${c.client_first_name} ${c.client_last_name}`,
         service_name: c.service_name,
         staff_name: c.staff_first_name && c.staff_last_name 

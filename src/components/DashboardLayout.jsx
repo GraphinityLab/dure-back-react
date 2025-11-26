@@ -388,18 +388,45 @@ export default function DashboardLayout() {
           </div>
 
           {/* Right rail: upcoming appointments */}
-          <div className="w-[280px] shrink-0 bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-5 flex flex-col gap-4 overflow-hidden">
+          <div className="w-[320px] shrink-0 bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-6 flex flex-col gap-4 overflow-hidden max-h-[calc(100vh-140px)]">
             <div className="shrink-0">
-              <h3 className="text-sm font-semibold text-[#3c2b21] mb-1 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#c1a38f]" />
-                Upcoming Appointments
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-[#3c2b21] flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#c1a38f] animate-pulse" />
+                  Upcoming Appointments
+                </h3>
+                {upcomingAppointments && upcomingAppointments.length > 0 && (
+                  <span className="px-2 py-1 rounded-lg bg-[#c1a38f]/20 text-[#3c2b21] text-xs font-bold">
+                    {upcomingAppointments.length}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-[#6b5c55]">Next scheduled sessions</p>
             </div>
-            <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#c1a38f]/60 scrollbar-thumb-rounded-full scrollbar-track-transparent hover:scrollbar-thumb-[#a78974]/80">
+
+            <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-3" style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#c1a38f80 transparent'
+            }}>
+              <style>{`
+                div::-webkit-scrollbar {
+                  width: 6px;
+                }
+                div::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                div::-webkit-scrollbar-thumb {
+                  background: rgba(193, 163, 143, 0.5);
+                  border-radius: 10px;
+                }
+                div::-webkit-scrollbar-thumb:hover {
+                  background: rgba(167, 137, 116, 0.8);
+                }
+              `}</style>
+              
               {upcomingAppointments && upcomingAppointments.length > 0 ? (
-                <ul className="space-y-3">
-                  {upcomingAppointments.map((appt) => {
+                <>
+                  {upcomingAppointments.map((appt, index) => {
                     const formattedDate = new Date(
                       appt.appointment_date
                     ).toLocaleDateString("en-US", {
@@ -413,77 +440,108 @@ export default function DashboardLayout() {
                       bg: "bg-gray-100",
                       text: "text-gray-700",
                       border: "border-gray-200",
+                      dot: "bg-gray-400"
                     };
                     if (appt.status === "pending") {
                       statusConfig = {
                         bg: "bg-amber-50",
                         text: "text-amber-700",
                         border: "border-amber-200",
+                        dot: "bg-amber-500"
                       };
                     } else if (appt.status === "confirmed") {
                       statusConfig = {
                         bg: "bg-emerald-50",
                         text: "text-emerald-700",
                         border: "border-emerald-200",
+                        dot: "bg-emerald-500"
                       };
                     } else if (appt.status === "completed") {
                       statusConfig = {
                         bg: "bg-blue-50",
                         text: "text-blue-700",
                         border: "border-blue-200",
+                        dot: "bg-blue-500"
                       };
                     } else if (appt.status === "cancelled" || appt.status === "declined") {
                       statusConfig = {
                         bg: "bg-rose-50",
                         text: "text-rose-700",
                         border: "border-rose-200",
+                        dot: "bg-rose-500"
                       };
                     }
 
                     return (
-                      <li
+                      <motion.li
                         key={appt.appointment_id}
-                        className="group relative p-3.5 rounded-2xl bg-white/70 backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="group relative p-4 rounded-2xl bg-white/70 backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-lg hover:scale-[1.02] hover:bg-white/90 transition-all duration-300 cursor-pointer"
                       >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-[#3c2b21] truncate">
+                        {/* Status indicator dot on the left edge */}
+                        <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 ${statusConfig.dot} rounded-r-full opacity-80`} />
+                        
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="flex-1 min-w-0 pl-2">
+                            <div className="text-xs font-bold text-[#3c2b21] mb-0.5">
                               {formattedDate}
                             </div>
-                            <div className="text-xs text-[#6b5c55] font-medium">
-                              {appt.start_time}
+                            <div className="flex items-center gap-2">
+                              <div className="text-sm text-[#6b5c55] font-semibold">
+                                {appt.start_time}
+                              </div>
+                              <div className={`h-1 w-1 rounded-full ${statusConfig.dot}`} />
                             </div>
                           </div>
                           <span
-                            className={`px-2 py-1 rounded-lg text-[0.6rem] font-semibold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border shrink-0`}
+                            className={`px-2.5 py-1 rounded-lg text-[0.65rem] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border shrink-0 shadow-sm`}
                           >
                             {appt.status}
                           </span>
                         </div>
-                        <div className="space-y-1">
-                          <div className="text-sm font-medium text-[#3c2b21] truncate">
-                            {appt.client_first_name} {appt.client_last_name}
+                        
+                        <div className="space-y-1.5 pl-2">
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[#c1a38f]" />
+                            <div className="text-sm font-semibold text-[#3c2b21] truncate">
+                              {appt.client_first_name} {appt.client_last_name}
+                            </div>
                           </div>
-                          <div className="text-xs text-[#6b5c55] italic truncate">
+                          <div className="text-xs text-[#6b5c55] font-medium italic truncate pl-3">
                             {appt.service_name}
                           </div>
+                          {appt.staff_first_name && (
+                            <div className="text-[0.65rem] text-[#8b7c75] truncate pl-3">
+                              with {appt.staff_first_name} {appt.staff_last_name}
+                            </div>
+                          )}
                         </div>
-                      </li>
+                        
+                        {/* Hover effect overlay */}
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#c1a38f]/0 to-[#a78974]/0 group-hover:from-[#c1a38f]/5 group-hover:to-[#a78974]/5 transition-all duration-300 pointer-events-none" />
+                      </motion.li>
                     );
                   })}
-                </ul>
+                </>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="p-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/50 mb-3">
-                    <HiOutlineCalendar className="h-8 w-8 text-[#6b5c55]" />
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex flex-col items-center justify-center py-16 text-center"
+                >
+                  <div className="p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/50 mb-4 shadow-sm">
+                    <HiOutlineCalendar className="h-10 w-10 text-[#6b5c55]" />
                   </div>
-                  <p className="text-sm font-medium text-[#3c2b21] mb-1">
+                  <p className="text-sm font-semibold text-[#3c2b21] mb-1">
                     No Upcoming Appointments
                   </p>
                   <p className="text-xs text-[#6b5c55]">
                     All clear for now
                   </p>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>

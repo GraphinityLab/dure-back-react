@@ -1,8 +1,10 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCcw, AlertTriangle, Search as SearchIcon, X, Calendar, List } from "lucide-react";
+import { RefreshCcw, AlertTriangle, Search as SearchIcon, X, Calendar, List, Filter, User, Clock } from "lucide-react";
 import PremiumSelect from "../components/common/PremiumSelect";
+import SkeletonLoader from "../components/common/SkeletonLoader";
+import EmptyState from "../components/common/EmptyState";
 
 import axiosInstance from "../../utils/axiosInstance";
 import AppointmentList from "../components/appointments/AppointmentList";
@@ -83,6 +85,12 @@ const AppointmentsPage = () => {
   const debouncedQuery = useDebouncedValue(searchQuery, 250);
   const [viewMode, setViewMode] = useState("list"); // "list" or "calendar"
 
+  // Advanced Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedStaffId, setSelectedStaffId] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+
   // optional: expose a sort mode; default by upcoming start time asc
   const [sortMode, setSortMode] = useState("upcoming");
 
@@ -138,19 +146,32 @@ const AppointmentsPage = () => {
   const filteredAppointments = useMemo(() => {
     const list = Array.isArray(appointments) ? appointments : [];
     const q = debouncedQuery.trim().toLowerCase();
-    if (!q) return list;
-
+    
     return list.filter((appt) => {
+      // 1. Search Query
       const name = appt.clientName?.toLowerCase() || "";
       const service = appt.serviceName?.toLowerCase() || "";
       const cat = appt.serviceCategory?.toLowerCase() || "";
-      return (
-        name.includes(q) ||
-        service.includes(q) ||
-        cat.includes(q)
-      );
+      const matchesSearch = !q || name.includes(q) || service.includes(q) || cat.includes(q);
+
+      // 2. Staff Filter
+      const matchesStaff = selectedStaffId === "all" || String(appt.staff_id) === String(selectedStaffId);
+
+      // 3. Status Filter
+      const matchesStatus = selectedStatus === "all" || appt.status?.toLowerCase() === selectedStatus.toLowerCase();
+
+      // 4. Date Range Filter
+      let matchesDate = true;
+      if (dateRange.start) {
+        matchesDate = matchesDate && new Date(appt.appointment_date) >= new Date(dateRange.start);
+      }
+      if (dateRange.end) {
+        matchesDate = matchesDate && new Date(appt.appointment_date) <= new Date(dateRange.end);
+      }
+
+      return matchesSearch && matchesStaff && matchesStatus && matchesDate;
     });
-  }, [appointments, debouncedQuery]);
+  }, [appointments, debouncedQuery, selectedStaffId, selectedStatus, dateRange]);
 
   const sortedAppointments = useMemo(() => {
     const arr = [...filteredAppointments];
@@ -171,18 +192,11 @@ const AppointmentsPage = () => {
       <section className="relative w-full py-12 px-4 sm:px-6 lg:px-8 text-[#3e2e3d] min-h-screen bg-gradient-to-br from-[#e5d4c3] via-[#f1e1d3] to-[#e5d4c3]">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <div className="h-12 w-72 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
-            <div className="h-12 w-96 rounded-2xl bg-white/40 backdrop-blur-sm animate-pulse" />
+            <SkeletonLoader className="h-12 w-72 rounded-2xl" />
+            <SkeletonLoader className="h-12 w-96 rounded-2xl" />
           </div>
-          {/* Premium skeleton cards */}
           <div className="space-y-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-32 rounded-2xl bg-gradient-to-r from-white/30 via-white/20 to-white/30 backdrop-blur-sm border border-white/30 animate-pulse"
-                style={{ animationDelay: `${i * 0.1}s` }}
-              />
-            ))}
+            <SkeletonLoader type="card" count={6} />
           </div>
         </div>
       </section>
@@ -262,96 +276,158 @@ const AppointmentsPage = () => {
           </div>
 
           {/* Premium Search and Filters Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col md:flex-row gap-3 w-full"
-          >
-            <div className="relative flex-1 group">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-white/60 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300" />
-              <div className="relative flex items-center">
-                <div className="absolute left-4 p-2 rounded-lg bg-white/50 backdrop-blur-sm">
-                  <SearchIcon className="h-5 w-5 text-[#6b5c55]" />
+          <div className="flex flex-col gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col md:flex-row gap-3 w-full"
+            >
+              <div className="relative flex-1 group">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-white/60 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300" />
+                <div className="relative flex items-center">
+                  <div className="absolute left-4 p-2 rounded-lg bg-white/50 backdrop-blur-sm">
+                    <SearchIcon className="h-5 w-5 text-[#6b5c55]" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by client, service, or category..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-14 pr-12 py-3.5 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#c1a38f]/50 focus:border-[#c1a38f] text-sm md:text-base placeholder:text-[#9b8a83] shadow-lg transition-all duration-300"
+                  />
+                  {searchQuery && (
+                    <motion.button
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      aria-label="Clear search"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-4 p-1.5 rounded-lg bg-white/60 hover:bg-white/80 backdrop-blur-sm transition-colors"
+                    >
+                      <X className="h-4 w-4 text-[#6b5c55]" />
+                    </motion.button>
+                  )}
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search by client, service, or category..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-14 pr-12 py-3.5 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#c1a38f]/50 focus:border-[#c1a38f] text-sm md:text-base placeholder:text-[#9b8a83] shadow-lg transition-all duration-300"
-                />
-                {searchQuery && (
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-4 py-3.5 rounded-xl border flex items-center gap-2 transition-all ${
+                    showFilters 
+                      ? "bg-[#3c2b21] text-white border-[#3c2b21]" 
+                      : "bg-white/70 text-[#3c2b21] border-white/50 hover:bg-white/90"
+                  }`}
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline">Filters</span>
+                </motion.button>
+
+                {/* View Toggle */}
+                <div className="flex rounded-xl bg-white/70 backdrop-blur-xl border border-white/50 overflow-hidden">
                   <motion.button
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label="Clear search"
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-4 p-1.5 rounded-lg bg-white/60 hover:bg-white/80 backdrop-blur-sm transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setViewMode("list")}
+                    className={`px-4 py-3.5 flex items-center gap-2 text-sm font-medium transition-all ${
+                      viewMode === "list"
+                        ? "bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white"
+                        : "text-[#3c2b21] hover:bg-white/50"
+                    }`}
                   >
-                    <X className="h-4 w-4 text-[#6b5c55]" />
+                    <List className="w-4 h-4" />
+                    <span className="hidden sm:inline">List</span>
                   </motion.button>
-                )}
-              </div>
-            </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setViewMode("calendar")}
+                    className={`px-4 py-3.5 flex items-center gap-2 text-sm font-medium transition-all ${
+                      viewMode === "calendar"
+                        ? "bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white"
+                        : "text-[#3c2b21] hover:bg-white/50"
+                    }`}
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span className="hidden sm:inline">Calendar</span>
+                  </motion.button>
+                </div>
 
-            <div className="flex gap-3">
-              {/* View Toggle */}
-              <div className="flex rounded-xl bg-white/70 backdrop-blur-xl border border-white/50 overflow-hidden">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setViewMode("list")}
-                  className={`px-4 py-3.5 flex items-center gap-2 text-sm font-medium transition-all ${
-                    viewMode === "list"
-                      ? "bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white"
-                      : "text-[#3c2b21] hover:bg-white/50"
-                  }`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={fetchData}
+                  className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white hover:from-[#5f4b5a] hover:to-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
                 >
-                  <List className="w-4 h-4" />
-                  <span className="hidden sm:inline">List</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setViewMode("calendar")}
-                  className={`px-4 py-3.5 flex items-center gap-2 text-sm font-medium transition-all ${
-                    viewMode === "calendar"
-                      ? "bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white"
-                      : "text-[#3c2b21] hover:bg-white/50"
-                  }`}
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span className="hidden sm:inline">Calendar</span>
+                  <RefreshCcw className="w-5 h-5" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </motion.button>
               </div>
+            </motion.div>
 
-              {viewMode === "list" && (
-                <PremiumSelect
-                  value={sortMode}
-                  onChange={(e) => setSortMode(e.target.value)}
-                  options={[
-                    { value: "upcoming", label: "Sort by upcoming" },
-                    { value: "recent", label: "Sort by recent" },
-                    { value: "client", label: "Sort by client" },
-                  ]}
-                  className="min-w-[180px]"
-                />
+            {/* Expanded Filters */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#6b5c55] ml-1">Staff Member</label>
+                      <PremiumSelect
+                        value={selectedStaffId}
+                        onChange={(e) => setSelectedStaffId(e.target.value)}
+                        options={[
+                          { value: "all", label: "All Staff" },
+                          ...staff.map(s => ({ value: s.staff_id, label: `${s.first_name} ${s.last_name}` }))
+                        ]}
+                        icon={User}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#6b5c55] ml-1">Status</label>
+                      <PremiumSelect
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        options={[
+                          { value: "all", label: "All Statuses" },
+                          { value: "confirmed", label: "Confirmed" },
+                          { value: "pending", label: "Pending" },
+                          { value: "completed", label: "Completed" },
+                          { value: "cancelled", label: "Cancelled" },
+                        ]}
+                        icon={Clock}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#6b5c55] ml-1">Date Range</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="date" 
+                          value={dateRange.start}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-xl bg-white/60 border border-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#c1a38f]"
+                        />
+                        <input 
+                          type="date" 
+                          value={dateRange.end}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-xl bg-white/60 border border-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#c1a38f]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={fetchData}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#3c2b21] to-[#5f4b5a] text-white hover:from-[#5f4b5a] hover:to-[#3c2b21] transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm"
-              >
-                <RefreshCcw className="w-5 h-5" />
-                <span className="hidden sm:inline">Refresh</span>
-              </motion.button>
-            </div>
-          </motion.div>
+            </AnimatePresence>
+          </div>
         </motion.div>
 
         {/* Premium Error Banner */}
@@ -397,66 +473,80 @@ const AppointmentsPage = () => {
             />
           </div>
         ) : sortedAppointments.length === 0 && !loading ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mt-12 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl border border-white/50 shadow-[0_20px_60px_rgba(60,43,33,0.15)] p-16 text-center"
-          >
-            <div className="inline-flex p-6 rounded-3xl bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 mb-6">
-              <Calendar className="h-16 w-16 text-amber-600" />
-            </div>
-            <h3 className="text-3xl font-semibold text-[#3c2b21] mb-3">No Appointments Found</h3>
-            <p className="text-[#6b5c55] max-w-md mx-auto mb-6">
-              {searchQuery
-                ? "No appointments match your search criteria. Try adjusting your search terms."
-                : "You don't have any appointments yet. Create one to get started!"}
-            </p>
-            {searchQuery && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSearchQuery("")}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] text-white font-medium shadow-lg hover:shadow-xl transition-all"
-              >
-                Clear Search
-              </motion.button>
-            )}
-          </motion.div>
-        ) : (
-          <AppointmentList
-            appointments={sortedAppointments}
-            onEdit={(appt) => {
-              setSelectedAppointment(appt);
-              setIsEditModalOpen(true);
-            }}
-            onInfo={(appt) => {
-              setSelectedAppointment(appt);
-              setIsMoreInfoModalOpen(true);
-            }}
-            onDelete={async (id) => {
-              if (!window.confirm("Delete this appointment?")) return;
-
-              // Optimistic UI: remove immediately, restore on failure
-              const prev = appointments;
-              const next = prev.filter((a) => a.id !== id);
-              setAppointments(next);
-
-              try {
-                setActionLoading(true);
-                const staffName = `${localStorage.getItem("first_name") || ""} ${localStorage.getItem("last_name") || ""}`.trim();
-                await axiosInstance.delete(`/appointments/${id}`, {
-                  data: { changed_by: staffName || "System" },
-                });
-                await fetchData();
-                setTimedMessage(setMessage, "Appointment deleted", "success");
-              } catch (e) {
-                setAppointments(prev); // rollback
-                setTimedMessage(setMessage, "Failed to delete", "error");
-              } finally {
-                setActionLoading(false);
-              }
-            }}
+          <EmptyState 
+            title="No Appointments Found"
+            description={searchQuery || selectedStaffId !== 'all' || selectedStatus !== 'all' 
+              ? "No appointments match your search or filter criteria." 
+              : "You don't have any appointments yet."}
+            action={
+              (searchQuery || selectedStaffId !== 'all' || selectedStatus !== 'all') && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedStaffId("all");
+                    setSelectedStatus("all");
+                    setDateRange({ start: "", end: "" });
+                  }}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c1a38f] to-[#a78974] text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  Clear All Filters
+                </motion.button>
+              )
+            }
           />
+        ) : (
+          <>
+            {viewMode === "list" && (
+              <div className="flex justify-end mb-4">
+                 <PremiumSelect
+                  value={sortMode}
+                  onChange={(e) => setSortMode(e.target.value)}
+                  options={[
+                    { value: "upcoming", label: "Sort by upcoming" },
+                    { value: "recent", label: "Sort by recent" },
+                    { value: "client", label: "Sort by client" },
+                  ]}
+                  className="min-w-[180px]"
+                />
+              </div>
+            )}
+            <AppointmentList
+              appointments={sortedAppointments}
+              onEdit={(appt) => {
+                setSelectedAppointment(appt);
+                setIsEditModalOpen(true);
+              }}
+              onInfo={(appt) => {
+                setSelectedAppointment(appt);
+                setIsMoreInfoModalOpen(true);
+              }}
+              onDelete={async (id) => {
+                if (!window.confirm("Delete this appointment?")) return;
+
+                // Optimistic UI: remove immediately, restore on failure
+                const prev = appointments;
+                const next = prev.filter((a) => a.id !== id);
+                setAppointments(next);
+
+                try {
+                  setActionLoading(true);
+                  const staffName = `${localStorage.getItem("first_name") || ""} ${localStorage.getItem("last_name") || ""}`.trim();
+                  await axiosInstance.delete(`/appointments/${id}`, {
+                    data: { changed_by: staffName || "System" },
+                  });
+                  await fetchData();
+                  setTimedMessage(setMessage, "Appointment deleted", "success");
+                } catch (e) {
+                  setAppointments(prev); // rollback
+                  setTimedMessage(setMessage, "Failed to delete", "error");
+                } finally {
+                  setActionLoading(false);
+                }
+              }}
+            />
+          </>
         )}
       </div>
 

@@ -2,6 +2,7 @@ import express from 'express';
 
 import {
   confirmAppointment,
+  completeAppointment,
   deleteAppointment,
   getAppointmentByID,
   getAppointments,
@@ -27,6 +28,7 @@ router.get("/:appointment_id", permissionMiddleware("appointment_read_single"), 
 router.put("/:appointment_id", permissionMiddleware("appointment_update"), updateAppointment);
 router.delete("/:appointment_id", permissionMiddleware("appointment_delete"), deleteAppointment);
 router.patch("/:appointment_id/confirm", permissionMiddleware("appointment_confirm_deny"), confirmAppointment);
+router.patch("/:appointment_id/complete", permissionMiddleware("appointment_update"), completeAppointment);
 router.patch("/:appointment_id/reschedule", permissionMiddleware("appointment_confirm_deny"), rescheduleAppointment);
 
 export default router;

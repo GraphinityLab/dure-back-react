@@ -168,22 +168,24 @@ const CalendarView = ({ appointments = [], onAppointmentClick, viewMode = 'month
           return (
             <motion.div
               key={dateStr}
-              whileHover={{ scale: 1.02 }}
+              whileHover={!isPast ? { scale: 1.02 } : {}}
               onClick={() => {
-                setSelectedDate(date);
-                if (dayAppointments.length > 0 && onAppointmentClick) {
-                  onAppointmentClick(dayAppointments[0]);
+                if (!isPast) {
+                  setSelectedDate(date);
+                  if (dayAppointments.length > 0 && onAppointmentClick) {
+                    onAppointmentClick(dayAppointments[0]);
+                  }
                 }
               }}
               className={`
-                aspect-square rounded-xl p-2 border-2 transition-all cursor-pointer
+                aspect-square rounded-xl p-2 border-2 transition-all
+                ${isPast ? 'cursor-not-allowed opacity-40 bg-gray-300/20' : 'cursor-pointer hover:bg-white/40 bg-white/30'}
                 ${isToday ? 'border-[#c1a38f] bg-[#c1a38f]/10' : 'border-white/50'}
-                ${isSelected ? 'ring-2 ring-[#3c2b21] ring-offset-2' : ''}
-                ${isPast ? 'opacity-60' : 'hover:bg-white/40'}
-                bg-white/30 backdrop-blur-sm
+                ${isSelected && !isPast ? 'ring-2 ring-[#3c2b21] ring-offset-2' : ''}
+                backdrop-blur-sm
               `}
             >
-              <div className={`text-sm font-medium mb-1 ${isToday ? 'text-[#3c2b21] font-bold' : 'text-[#6b5c55]'}`}>
+              <div className={`text-sm font-medium mb-1 ${isToday ? 'text-[#3c2b21] font-bold' : isPast ? 'text-gray-400' : 'text-[#6b5c55]'}`}>
                 {date.getDate()}
               </div>
               
@@ -193,12 +195,12 @@ const CalendarView = ({ appointments = [], onAppointmentClick, viewMode = 'month
                     key={idx}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className={`h-1.5 rounded-full ${getStatusColor(apt.status)}`}
+                    className={`h-1.5 rounded-full ${getStatusColor(apt.status)} ${isPast ? 'opacity-50' : ''}`}
                     title={`${apt.clientName || 'Client'} - ${apt.serviceName || 'Service'}`}
                   />
                 ))}
                 {dayAppointments.length > 3 && (
-                  <div className="text-[10px] text-[#6b5c55] font-medium">
+                  <div className={`text-[10px] font-medium ${isPast ? 'text-gray-400' : 'text-[#6b5c55]'}`}>
                     +{dayAppointments.length - 3} more
                   </div>
                 )}

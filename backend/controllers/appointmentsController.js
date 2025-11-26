@@ -214,6 +214,10 @@ export const updateAppointment = async (req, res) => {
     const { appointment_id } = req.params;
     const { appointment_date, start_time, end_time, notes, staff_id, status } =
       req.body;
+    
+    console.log('\n=== UPDATE APPOINTMENT REQUEST ===');
+    console.log('Appointment ID:', appointment_id);
+    console.log('Request body:', { appointment_date, start_time, end_time, notes, staff_id, status });
 
     // Get existing appointment
     const [existing] = await pool.query(
@@ -227,8 +231,24 @@ export const updateAppointment = async (req, res) => {
 
     const existingAppt = existing[0];
     const updateDate = appointment_date || existingAppt.appointment_date;
-    const updateStartTime = start_time || existingAppt.start_time?.slice(0, 5);
-    const updateEndTime = end_time || existingAppt.end_time?.slice(0, 5);
+    
+    // Extract time portion from start_time and end_time (they might be full datetime or just time)
+    const extractTime = (timeStr) => {
+      if (!timeStr) return null;
+      // If it contains a space, it's a datetime format
+      if (timeStr.includes(' ')) {
+        return timeStr.split(' ')[1].slice(0, 5); // Get HH:MM
+      }
+      // If it's already in HH:MM format, return it
+      return timeStr.slice(0, 5);
+    };
+    
+    const updateStartTime = start_time 
+      ? extractTime(start_time) 
+      : (existingAppt.start_time?.slice ? extractTime(existingAppt.start_time) : null);
+    const updateEndTime = end_time 
+      ? extractTime(end_time) 
+      : (existingAppt.end_time?.slice ? extractTime(existingAppt.end_time) : null);
     const updateStaffId = staff_id !== undefined ? staff_id : existingAppt.staff_id;
 
     // Validate business hours if time is being changed
@@ -242,15 +262,29 @@ export const updateAppointment = async (req, res) => {
 
     // Check for conflicts if staff or time is being changed
     if ((staff_id !== undefined || start_time || end_time || appointment_date) && updateStaffId) {
+      console.log('Checking staff availability for update:', {
+        appointment_id: parseInt(appointment_id),
+        updateStaffId,
+        updateDate,
+        updateStartTime,
+        updateEndTime
+      });
+      
       const availability = await checkStaffAvailability(
         updateStaffId,
         updateDate,
         updateStartTime,
         updateEndTime,
-        appointment_id // Exclude current appointment
+        parseInt(appointment_id) // Ensure it's an integer
       );
 
       if (!availability.available) {
+        console.error('Update conflict detected:', {
+          appointment_id: parseInt(appointment_id),
+          reason: availability.reason,
+          conflicts: availability.conflicts
+        });
+        
         return res.status(409).json({
           message: availability.reason,
           conflicts: availability.conflicts,
@@ -259,28 +293,8 @@ export const updateAppointment = async (req, res) => {
       }
     }
 
-    // Check for general conflicts
-    if (start_time || end_time || appointment_date) {
-      const conflicts = await checkAppointmentConflicts(
-        updateDate,
-        updateStartTime,
-        updateEndTime,
-        appointment_id
-      );
-
-      if (conflicts.hasConflict) {
-        const sameClientConflict = conflicts.conflicts.find(
-          c => c.client_id === existingAppt.client_id
-        );
-        if (!sameClientConflict) {
-          return res.status(409).json({
-            message: "Time slot conflicts with existing appointment(s)",
-            conflicts: conflicts.conflicts,
-            code: 'TIME_CONFLICT'
-          });
-        }
-      }
-    }
+    // Note: General conflict checking is handled by checkStaffAvailability above
+    // which properly excludes the current appointment being edited
 
     const oldData = existingAppt;
 
@@ -303,6 +317,11 @@ export const updateAppointment = async (req, res) => {
     const updates = [];
     const values = [];
 
+    // Update appointment_date if provided
+    if (appointment_date !== undefined) {
+      updates.push("appointment_date = ?");
+      values.push(appointment_date);
+    }
     if (formattedStart) {
       updates.push("start_time = ?");
       values.push(formattedStart);
@@ -319,11 +338,19 @@ export const updateAppointment = async (req, res) => {
       updates.push("staff_id = ?");
       values.push(staff_id);
     }
+    if (status !== undefined) {
+      updates.push("status = ?");
+      values.push(status);
+    }
 
     if (!updates.length)
       return res.status(400).json({ message: "Nothing to update" });
 
     values.push(appointment_id);
+    
+    console.log('Executing update query:', `UPDATE appointments SET ${updates.join(", ")} WHERE appointment_id = ?`);
+    console.log('With values:', values);
+    
     await pool.query(
       `UPDATE appointments SET ${updates.join(", ")} WHERE appointment_id = ?`,
       values
@@ -341,13 +368,17 @@ export const updateAppointment = async (req, res) => {
       changed_by: getChangedBy(req),
       changes: { before: oldData, after: updated[0] },
     });
+    
+    console.log('✅ Appointment updated successfully!');
+    console.log('=== END UPDATE APPOINTMENT ===\n');
 
     res.json({
       message: "Appointment updated successfully",
       appointment: updated[0],
     });
   } catch (err) {
-    console.error("updateAppointment error:", err);
+    console.error("\n❌ updateAppointment error:", err);
+    console.error('=== END UPDATE APPOINTMENT (ERROR) ===\n');
     res.status(500).json({ message: "Server error updating appointment" });
   }
 };
@@ -457,6 +488,47 @@ Thank you,<br/>
     res.status(500).json({ message: "Server error confirming appointment" });
   }
 };
+
+// -------------------- COMPLETE APPOINTMENT --------------------
+export const completeAppointment = async (req, res) => {
+  try {
+    const { appointment_id } = req.params;
+
+    const [existing] = await pool.query(
+      `
+      SELECT a.*, c.first_name AS client_first_name, c.email AS client_email, s.name AS service_name
+      FROM appointments a
+      LEFT JOIN clients c ON a.client_id = c.client_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      WHERE a.appointment_id = ?`,
+      [appointment_id]
+    );
+
+    if (!existing.length)
+      return res.status(404).json({ message: "Appointment not found" });
+
+    const oldData = existing[0];
+
+    await pool.query(
+      `UPDATE appointments SET status = 'completed' WHERE appointment_id = ?`,
+      [appointment_id]
+    );
+
+    await logChange({
+      entity_type: "appointment",
+      entity_id: appointment_id,
+      action: "complete",
+      changed_by: getChangedBy(req),
+      changes: { before: oldData, after: { ...oldData, status: "completed" } },
+    });
+
+    res.json({ message: "Appointment marked as completed" });
+  } catch (err) {
+    console.error("completeAppointment error:", err);
+    res.status(500).json({ message: "Server error completing appointment" });
+  }
+};
+
 
 // -------------------- RESCHEDULE APPOINTMENT --------------------
 export const rescheduleAppointment = async (req, res) => {
@@ -575,7 +647,7 @@ export const getDashboardOverviewAppointments = async (req, res) => {
       `SELECT COUNT(*) AS count FROM staff WHERE online = 1`
     );
 
-    // Upcoming appointments (next 8) with service name
+    // Upcoming appointments (all) with service name
     const [upcomingAppointments] = await pool.query(
       `SELECT a.appointment_id,
               a.appointment_date,
@@ -591,8 +663,7 @@ export const getDashboardOverviewAppointments = async (req, res) => {
        LEFT JOIN staff st ON a.staff_id = st.staff_id
        LEFT JOIN services s ON a.service_id = s.service_id
        WHERE a.appointment_date >= CURDATE()
-       ORDER BY a.appointment_date ASC, a.start_time ASC
-       LIMIT 8`
+       ORDER BY a.appointment_date ASC, a.start_time ASC`
     );
 
     return res.json({

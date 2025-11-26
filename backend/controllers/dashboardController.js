@@ -53,6 +53,32 @@ export const getDashboardOverview = async (req, res) => {
        AND YEAR(created_at) = YEAR(CURDATE())`
     );
 
+    // New Clients This Month
+    const [[newClientsThisMonth]] = await pool.query(
+      `SELECT COUNT(*) AS count 
+       FROM clients 
+       WHERE MONTH(created_at) = MONTH(CURDATE()) 
+       AND YEAR(created_at) = YEAR(CURDATE())`
+    );
+
+    // Active Clients (clients with at least one appointment)
+    const [[activeClients]] = await pool.query(
+      `SELECT COUNT(DISTINCT client_id) AS count 
+       FROM appointments 
+       WHERE status NOT IN ('cancelled', 'declined')`
+    );
+
+    // Average Appointments Per Client
+    const [[avgAppointmentsPerClient]] = await pool.query(
+      `SELECT 
+        CASE 
+          WHEN COUNT(DISTINCT client_id) = 0 THEN 0 
+          ELSE COUNT(*) / COUNT(DISTINCT client_id) 
+        END AS avg_count
+       FROM appointments 
+       WHERE status NOT IN ('cancelled', 'declined')`
+    );
+
     res.json({
       counts: {
         totalAppointments: totalAppointments.count || 0,
@@ -64,6 +90,10 @@ export const getDashboardOverview = async (req, res) => {
         totalServices: totalServices.count || 0,
         totalHistory: totalHistory.count || 0,
         completedThisMonth: completedThisMonth.count || 0,
+        // Client-specific metrics
+        newThisMonth: newClientsThisMonth.count || 0,
+        activeClients: activeClients.count || 0,
+        avgAppointmentsPerClient: Number(avgAppointmentsPerClient.avg_count || 0),
       },
     });
   } catch (err) {
