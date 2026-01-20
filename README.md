@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Playfair+Display&size=24&duration=3000&pause=1000&center=true&vCenter=true&width=500&color=8D7B68&lines=Duré+Aesthetics;Where+Beauty+Meets+Artistry" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&duration=3000&pause=1000&center=true&vCenter=true&width=500&lines=Creative+Tech+Studio;Next.js+%7C+SaaS+%7C+Design+Experts" alt="Typing SVG" />
 </h1>
 
 <h3 align="center">🌿 Crafting premium salon experiences through high-integrity software engineering.</h3>
