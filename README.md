@@ -1,16 +1,68 @@
-# React + Vite
+# <p align="center"><font color="#8D7B68">🌿 Duré Aesthetics — Salon Management System</font></p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <img src="https://dure.graphinitylab.com/dure_bg.png" width="100%">
+</p>
 
-Currently, two official plugins are available:
+<p align="center">
+  <font color="#A4907C"><i>"Where beauty meets artistry, and every moment is crafted for your radiance."</i></font>
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+### 📋 <font color="#8D7B68">Project Overview</font>
+**Duré Aesthetics** is a premium salon management platform built with **Next.js** and **MariaDB**. It balances a minimalist frontend, inspired by natural earth tones with a secure, high-integrity backend to manage client scheduling, staff operations, and administrative oversight.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+---
 
-## Expanding the ESLint configuration
+### 🛠 <font color="#8D7B68">Technical Stack</font>
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| <font color="#A4907C">Component</font> | <font color="#A4907C">Technologies</font> |
+| :--- | :--- |
+| **Frontend** |React, Next.js, Tailwind CSS, Vite |
+| **Backend** | Node.js, Express |
+| **Database** | MariaDB, MongoDB  |
+| **Security** | Bcrypt, Server-side Sessions, JWT  |
+
+---
+
+### 🔐 <font color="#8D7B68">Security & "Robust" Engineering</font>
+Prioritizing **Data Integrity** and **Cyber Security Posture** through professional development standards:
+
+* **State Integrity:** Implemented server-side **Sessions** via Express to maintain secure user states.
+* **Credential Protection:** Utilized **Bcrypt** for industry-standard password hashing and secure data storage.
+* **Access Control:** Integrated **JWT Authentication** to manage role-based access for staff and admin dashboards.
+* **Quality Assurance:** Applied rigorous **API Validation** and **Agile QA practices**, including regression testing to ensure 100% reliability.
+
+---
+
+### ✨ <font color="#8D7B68">Key Features</font>
+* **Responsive UI:** Engineered with **Tailwind CSS** for a seamless, mobile-first experience.
+* **Dynamic Booking:** A streamlined scheduling flow validated against backend logic to prevent conflicts.
+* **Visual Artistry:** Custom **Canvas effects** and animated sections reflecting a premium brand identity.
+* **Admin Oversight:** Comprehensive dashboards for managing appointments and staff records.
+
+---
+
+### 🚀 <font color="#8D7B68">Setup and Installation</font>
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/GraphinityLab/Dure.git
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+3.  **Configure Environment**
+    Create a `.env` file and add your `DB_HOST`, `SESSION_SECRET`, and `MARIADB_URL`.
+4.  **Run in Development**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+<p align="center">
+  Built with Precision by <b>Graphinity Labs</b><br>
+ 
+</p>
