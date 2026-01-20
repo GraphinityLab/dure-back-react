@@ -1,7 +1,7 @@
 <br />
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GraphinityLab/dure-backend/main/hero-preview.jpg" width="80%" alt="Duré Aesthetics Banner"/>
+  <img src="https://dure.graphinitylab.com/dure_bg.png" width="80%" alt="Duré Aesthetics Banner"/>
 </p>
 
 <h1 align="center">
