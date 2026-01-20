@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">
- <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Source+Code+Pro&pause=1000center=true&color=8D7B68&width=435&lines=Dure+Aesthetics;Where+Beauty+Meets+Artistry" alt="Typing SVG" /></a>
+ <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Source+Code+Pro&pause=500center=true&color=8D7B68&width=435&lines=Dure+Aesthetics;Where+Beauty+Meets+Artistry" alt="Typing SVG" /></a>
 </h1>
 
 <h3 align="center">🌿 Crafting premium salon experiences through high-integrity software engineering.</h3>
