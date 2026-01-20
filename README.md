@@ -14,15 +14,15 @@
 
 ## 🧠 The Vision
 
-> [cite_start]We’ve built a **robust management ecosystem** blending ✨ aesthetic elegance with ⚙️ backend security. [cite: 24]
+> We’ve built a **robust management ecosystem** blending ✨ aesthetic elegance with ⚙️ backend security. 
 > From seamless client scheduling to secure role-based access, we ensure every digital interaction is as radiant as the services provided.
 
 ### 💼 Core Architecture
 
-- [cite_start]🖥️ **Responsive Frontend:** Engineered with React, Next.js, and Tailwind CSS for cross-browser fluidity. [cite: 9, 30, 31]
-- [cite_start]🔐 **Robust Security:** Implemented server-side Sessions and Bcrypt encryption for data integrity. [cite: 11]
-- [cite_start]🎨 **Brand-First UI:** Custom canvas effects and animated hero sections tailored for high-end luxury. [cite: 30]
-- [cite_start]🛠️ **Scalable Backend:** Powered by Node.js and MariaDB for reliable performance. [cite: 24, 36]
+-  **Responsive Frontend:** Engineered with React, Next.js, and Tailwind CSS for cross-browser fluidity. 
+- 🔐 **Robust Security:** Implemented server-side Sessions and Bcrypt encryption for data integrity. 
+- 🎨 **Brand-First UI:** Custom canvas effects and animated hero sections tailored for high-end luxury. 
+- 🛠️ **Scalable Backend:** Powered by Node.js and MariaDB for reliable performance. 
 
 ---
 
@@ -73,7 +73,10 @@
 ## 👨‍💻 Development Team
 
 <p align="center">
+  <a href="https://github.com/jaysigx" target="_blank">
+    <img src="https://img.shields.io/badge/JaySigx-100000?style=for-the-badge&logo=github&logoColor=white" alt="JaySigx GitHub" />
+  </a>
   <a href="https://github.com/akshatpat3l" target="_blank">
-    <img src="https://img.shields.io/badge/AkshatPat3l-8D7B68?style=for-the-badge&logo=github&logoColor=white" alt="AkshatPat3l GitHub" />
+    <img src="https://img.shields.io/badge/AkshatPat3l-100000?style=for-the-badge&logo=github&logoColor=white" alt="AkshatPat3l GitHub" />
   </a>
 </p>
